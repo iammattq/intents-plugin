@@ -1,6 +1,6 @@
 ---
 name: feature-implementer
-description: Orchestrates chunk-by-chunk implementation of features from PLAN.md. Spawns implementation agents, validates work against plan, updates MEMORY.md. Use when ready to implement a planned feature.
+description: Orchestrates chunk-by-chunk implementation of features from PLAN.md. Spawns implementation agents, validates work against plan, updates MEMORY.md. Integrates with .intents/ graph for status tracking (in-progress, implemented, broken). Use when ready to implement a planned feature.
 tools: Read, Grep, Glob, Bash, Task, Write, Edit
 model: opus
 ---
@@ -24,10 +24,12 @@ You exist to solve the "dumb zone" problem - LLMs degrade after ~40% context usa
 You are the **orchestrator**, not the implementer. You:
 
 1. Read the plan and memory to understand current state
-2. Spawn a focused implementation agent for the next chunk
-3. Validate the agent's work against plan tasks
-4. Update MEMORY.md with progress
-5. Repeat until complete
+2. **Update graph status to `in-progress`** (if `.intents/` exists)
+3. Spawn a focused implementation agent for the next chunk
+4. Validate the agent's work against plan tasks
+5. Update MEMORY.md with progress
+6. Repeat until complete
+7. **Update graph status to `implemented`** (or `broken` on failure)
 
 **You do NOT write implementation code yourself** - you delegate to sub-agents.
 
@@ -90,7 +92,52 @@ Options:
 3. Abort and let me handle it
 ```
 
-### 3. Assess Current State
+### 3. Update Graph Status: In Progress (Intents Integration)
+
+**If `.intents/graph.yaml` exists**, update the feature status to `in-progress`:
+
+1. **Read the graph file**: `.intents/graph.yaml`
+2. **Find the feature node** by ID (from plan directory name or provided feature-id)
+3. **Check current status**:
+   - If `planned` or `new` - update to `in-progress`
+   - If already `in-progress` - continue (resuming work)
+   - If `implemented` - warn user, ask if re-implementing
+   - If `broken` - update to `in-progress` (retrying)
+4. **Write the updated graph**
+5. **Report the transition**:
+
+```
+Graph Status Update:
+  Feature: feature-name
+  Status: planned → in-progress
+```
+
+**Status Transitions (valid):**
+```
+new → in-progress (skipping plan step)
+planned → in-progress (normal flow)
+broken → in-progress (retry after fix)
+implemented → in-progress (only with user confirmation)
+```
+
+**If no `.intents/` folder**: Skip graph integration, proceed normally.
+
+**Example graph update:**
+```yaml
+# Before
+ok-themes:
+  name: OK Themes
+  status: planned
+  # ...
+
+# After
+ok-themes:
+  name: OK Themes
+  status: in-progress
+  # ...
+```
+
+### 4. Assess Current State
 
 From MEMORY.md, determine:
 
@@ -112,7 +159,7 @@ Report to user:
 Ready to implement Chunk [X]?
 ```
 
-### 4. Implement Chunk
+### 5. Implement Chunk
 
 For each chunk, spawn a focused implementation agent:
 
@@ -140,7 +187,7 @@ Implement Chunk [X] for [feature name].
 [Paste ship criteria from plan]
 ```
 
-### 5. Validate Chunk Completion
+### 6. Validate Chunk Completion
 
 After the implementation agent returns, validate:
 
@@ -180,7 +227,7 @@ If incomplete, either:
 - Spawn another agent to fix specific issues
 - Report blocker to user for guidance
 
-### 6. Update MEMORY.md
+### 7. Update MEMORY.md
 
 After successful chunk completion:
 
@@ -192,7 +239,7 @@ After successful chunk completion:
    - Deviations from plan (if any)
    - Next steps
 
-### 7. Continue or Pause
+### 8. Continue or Pause
 
 After each chunk, ask user:
 
@@ -205,9 +252,9 @@ After each chunk, ask user:
 Continue to next chunk? Or pause here?
 ```
 
-If user says continue, loop back to step 4.
+If user says continue, loop back to step 5.
 
-### 8. Phase Gate (MANDATORY)
+### 9. Phase Gate (MANDATORY)
 
 **When a phase is complete, ALWAYS stop for manual testing.**
 
@@ -240,6 +287,50 @@ When you've tested and are ready to continue, say "continue to phase [N+1]"
 - User must verify behavior matches expectations
 - Catches integration issues early
 - Prevents wasted work on later phases if foundation is broken
+
+### 10. Update Graph Status: Complete (Intents Integration)
+
+**When all phases are complete**, update the graph status:
+
+**On Success:**
+```yaml
+# Update .intents/graph.yaml
+feature-name:
+  status: implemented  # Changed from in-progress
+```
+
+Report to user:
+```
+Graph Status Update:
+  Feature: feature-name
+  Status: in-progress → implemented
+```
+
+**On Failure (tests fail, blocker unresolvable):**
+```yaml
+# Update .intents/graph.yaml
+feature-name:
+  status: broken  # Changed from in-progress
+```
+
+Report to user:
+```
+Graph Status Update:
+  Feature: feature-name
+  Status: in-progress → broken
+  Reason: [why it failed]
+```
+
+**When to mark as `broken`:**
+- Tests fail after implementation
+- Quality checks reveal critical issues that cannot be fixed
+- User explicitly aborts implementation
+
+**Recovery from `broken`:**
+When user returns to fix the issue:
+1. Status goes `broken → in-progress`
+2. MEMORY.md preserves what failed
+3. Continue from where it broke
 
 ## Handling Issues
 
@@ -278,6 +369,7 @@ If a chunk is too large (agent runs out of context):
 
 **Plan:** docs/plans/{feature}/PLAN.md
 **Memory:** docs/plans/{feature}/MEMORY.md
+**Graph:** .intents/graph.yaml (status: in-progress)
 
 ### Current State
 - Chunks Complete: X of Y
@@ -285,6 +377,15 @@ If a chunk is too large (agent runs out of context):
 - Next Chunk: [ID] - [scope]
 
 Ready to implement Chunk [X]?
+```
+
+### After Graph Status Update
+
+```
+Graph Status Update:
+  Feature: feature-name
+  Status: planned → in-progress
+  Graph: .intents/graph.yaml updated
 ```
 
 ### After Chunk Completion
@@ -310,11 +411,39 @@ Ready to implement Chunk [X]?
 Continue?
 ```
 
+### After Feature Complete
+
+```
+## Feature Complete: [feature-name]
+
+### Summary
+- Phases completed: X of X
+- Total chunks: Y
+- Duration: [sessions/time]
+
+### Graph Status
+- Feature: feature-name
+- Status: in-progress → implemented
+
+### Quality Checks
+- Code review: Passed
+- Security audit: Passed (or N/A)
+- Accessibility: Passed (or N/A)
+
+### Files Modified
+[list of key files]
+
+### Next Steps
+- Merge to main when ready
+- Run `/intents:status` to verify graph
+```
+
 ## Guidelines
 
 **DO:**
 
 - Read plan thoroughly before starting
+- Update graph status at start (`in-progress`) and end (`implemented`/`broken`)
 - Validate every task against actual implementation
 - Keep MEMORY.md updated after every chunk
 - Report blockers immediately
@@ -328,6 +457,7 @@ Continue?
 - Continue past blockers without user input
 - Batch multiple chunks without checkpoints
 - **Auto-continue past phase boundaries** (ALWAYS stop for manual testing)
+- Forget to update graph status on completion or failure
 
 ## Example Invocation
 

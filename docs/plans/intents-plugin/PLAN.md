@@ -66,7 +66,8 @@ intents-plugin/
 │   ├── init.md                      # /intents:init
 │   ├── status.md                    # /intents:status
 │   ├── plan.md                      # /intents:plan
-│   └── implement.md                 # /intents:implement
+│   ├── implement.md                 # /intents:implement
+│   └── validate.md                  # /intents:validate
 │
 ├── templates/
 │   ├── graph.yaml                   # Empty feature tree scaffold
@@ -106,6 +107,7 @@ intents-plugin/
 - `/intents:status` - shows graph state, feature status, what's implemented/planned/broken
 - `/intents:plan [feature]` - spawns research → plan workflow + creates graph node
 - `/intents:implement [feature]` - spawns `feature-implementer` + updates status
+- `/intents:validate` - detect and fix structural issues in graph
 
 **4. Graph Access Patterns**
 
@@ -168,6 +170,13 @@ User: /intents:status
   → Flag out-of-sync or broken features
 ```
 
+**Repair:**
+```
+User: /intents:validate
+  → Detect structural issues (missing plans, undefined capabilities, etc.)
+  → With --fix: prompt user, apply approved fixes
+```
+
 ## Trade-offs & Decisions
 
 | Decision | Rationale | Trade-off |
@@ -196,7 +205,7 @@ User: /intents:status
 - `/home/mq/Projects/agents-and-skills/intents-plugin/.claude-plugin/plugin.json`
 - `/home/mq/Projects/agents-and-skills/intents-plugin/skills/intents-system/SKILL.md`
 - `/home/mq/Projects/agents-and-skills/intents-plugin/agents/codebase-analyzer/AGENT.md`
-- `/home/mq/Projects/agents-and-skills/intents-plugin/commands/*.md` (4 files)
+- `/home/mq/Projects/agents-and-skills/intents-plugin/commands/*.md` (5 files)
 - `/home/mq/Projects/agents-and-skills/intents-plugin/templates/*.yaml` (4 files)
 - `/home/mq/Projects/agents-and-skills/intents-plugin/README.md`
 
@@ -219,7 +228,7 @@ User: /intents:status
 **Total plugin files:**
 - 2 skills
 - 10 agents (8 copied, 2 modified, 1 new)
-- 4 commands
+- 5 commands
 - 4 templates
 - 1 plugin manifest
 - 1 README
@@ -420,6 +429,48 @@ tech-id:
 | 5C | End-to-end portfolio test | Testing |
 | 5D | Bug fixes + refinements | Various |
 
+### Phase 6: Validation (Graph Repair)
+
+**Intent:** Add `/intents:validate` command that detects and optionally fixes structural issues in the graph
+
+**Ship Criteria:**
+- `/intents:validate` reports all structural issues in structured format
+- `/intents:validate --fix` prompts user for each issue with fix options
+- Reuses detection logic from `/intents:status` sync checking (Step 6)
+- Adds one new check: broken capability reference (tech not in tech.yaml)
+- All fixes are non-destructive (prompts before any write)
+- Output format matches specification
+
+**Tasks:**
+
+1. **Create `/intents:validate` command** - detect and report issues
+2. **Add broken capability reference check** - capability references tech not in tech.yaml
+3. **Add `--fix` mode** - interactive prompts for each issue type
+4. **Implement fix actions**:
+   - Remove plan reference from feature
+   - Add capability to capabilities.yaml (placeholder)
+   - Remove capability from feature
+   - Remove feature from graph (orphaned)
+   - Add tech to tech.yaml (placeholder)
+   - Remove tech reference from capability
+5. **Update status command** - add hint to run validate when issues found
+
+**Issue Types and Fix Options:**
+
+| Issue Type | Detection | Fix Options |
+|------------|-----------|-------------|
+| `MISSING_PLAN` | Feature has `plan:` field but file doesn't exist | (r) Remove reference, (s) Skip |
+| `UNDEFINED_CAPABILITY` | Feature uses capability not in capabilities.yaml | (r) Remove from feature, (a) Add to capabilities.yaml, (s) Skip |
+| `ORPHANED_FEATURE` | Feature has no parent and isn't root | (r) Remove from graph, (s) Skip |
+| `BROKEN_CAPABILITY_REF` | Capability references tech not in tech.yaml | (r) Remove tech reference, (a) Add to tech.yaml, (s) Skip |
+
+**Session Chunks:**
+
+| Chunk | Scope | Files |
+|-------|-------|-------|
+| 6A | `/intents:validate` command (detect + fix modes, all 4 issue types) | 1 file (commands/validate.md) |
+| 6B | Testing + status.md update (add validate hint) | 1 file (status.md) + testing |
+
 ## Session Protocol
 
 ### Start of Session
@@ -496,6 +547,12 @@ tech-id:
 - Complete R-P-I cycle on real portfolio feature
 - Document any friction points
 - Refine based on real usage
+
+**Phase 6 Test:**
+- Introduce intentional issues in graph (missing plan, undefined capability)
+- Run `/intents:validate` and verify detection
+- Run `/intents:validate --fix` and verify interactive prompts work
+- Confirm fixes are applied correctly
 
 ## Success Metrics
 
