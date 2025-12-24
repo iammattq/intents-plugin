@@ -1,0 +1,29 @@
+# Capabilities Catalog
+#
+# Interfaces that features consume. Defined by ADRs, implemented via tech stack.
+# Features reference these by name (e.g., "persistence:read", "images:consume").
+#
+# Categories:
+#   ui       - How things look (design system, theming)
+#   storage  - Where data lives (database, localStorage)
+#   media    - Binary content (images, files, canvas)
+#   auth     - Access control (sessions, passwords)
+#   content  - Content authoring (MDX, rich text)
+#   export   - Generate output (JSON, CSS, PDF)
+#   sync     - State coordination (cross-tab, realtime)
+
+# Example capability:
+#
+# capability-id:
+#   name: Capability Name
+#   type: capability
+#   category: ui | storage | media | auth | content | export | sync
+#   intent: What this enables for features
+#   adr: docs/decisions/XXX-decision.md  # optional
+#   tech:
+#     - tech-dependency-id
+#   interface: |
+#     Functions, hooks, or APIs available
+#   modes:  # optional - when capability has distinct usage patterns
+#     mode-name: |
+#       What's available in this mode

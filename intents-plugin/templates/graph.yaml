@@ -1,0 +1,34 @@
+# Feature Graph
+#
+# The architectural skeleton: what the system IS.
+# Features reference capabilities by name (defined in capabilities.yaml).
+#
+# Status values: new | planned | in-progress | implemented | broken
+#
+# Inheritance: Children inherit parent capabilities automatically.
+# Use capability:mode syntax to specify which mode (e.g., images:consume vs images:manage).
+
+root:
+  name: Project Name
+  type: feature
+  status: new
+  intent: What this project does for users
+  capabilities: []
+  # - capability-name
+  # - capability-name:mode
+
+features:
+  # Example feature:
+  #
+  # feature-id:
+  #   name: Feature Name
+  #   type: feature
+  #   status: new | planned | in-progress | implemented | broken
+  #   intent: User-facing value this feature provides
+  #   parent: parent-feature-id
+  #   plan: docs/plans/feature-id/plan.md  # optional, added when planning
+  #   capabilities:
+  #     - capability-name
+  #     - capability-name:mode
+  #   children:
+  #     - child-feature-id

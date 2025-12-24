@@ -1,0 +1,17 @@
+# Entities
+#
+# Data models with their own capability requirements and state.
+# These represent the core domain objects in the system.
+#
+# Entities can invoke capabilities based on their state.
+# For example, a Gallery entity might invoke images:manage when admin is editing.
+
+# Example entity:
+#
+# entity-id:
+#   name: EntityName
+#   type: entity
+#   capabilities:
+#     - capability-name  # invoked based on state conditions
+#   state:
+#     - field: type
