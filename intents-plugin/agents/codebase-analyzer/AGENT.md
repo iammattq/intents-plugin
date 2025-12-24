@@ -23,6 +23,13 @@ You bootstrap the `.intents/` graph from an existing codebase. Unlike `codebase-
 
 ### Phase 1: Project Overview
 
+**IMPORTANT: Fresh Bootstrap Only**
+- IGNORE any existing `.intents/` or `.old.intents/` folders
+- Do NOT read or merge from previous graph files
+- Analyze the actual codebase to determine status
+- All features with working code should be marked `implemented`
+- Only use `planned` for features with PLAN.md but no implementation
+
 Get the lay of the land:
 
 ```bash
@@ -90,7 +97,10 @@ Synthesize researcher outputs into graph structure:
 **graph.yaml**
 - Build feature tree from Feature Mapping results
 - Assign capabilities to features based on Capability Discovery
-- Set all statuses to `implemented` (existing code)
+- Determine status from **actual code**, not old graph files:
+  - `implemented` = route/page/component exists and works
+  - `planned` = has PLAN.md but no implementation code
+  - `in-progress` = partial implementation (rare during bootstrap)
 - Establish parent-child relationships
 
 **capabilities.yaml**
