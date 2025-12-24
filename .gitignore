@@ -28,6 +28,13 @@ yarn-error.log*
 .env*.local
 .env
 
+# Development docs (kept locally, not published)
+docs/
+
+# Local Claude Code config
+.claude/settings.local.json
+.claude/skills/skill-creator/
+
 # vercel
 .vercel
 

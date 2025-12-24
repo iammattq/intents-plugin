@@ -1,1 +1,0 @@
-../../intents-plugin/agents/codebase-analyzer/AGENT.md
