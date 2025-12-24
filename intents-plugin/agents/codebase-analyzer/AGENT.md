@@ -92,32 +92,63 @@ Return: List of tech with categories and config paths
 
 ### Phase 3: Compile Findings
 
-Synthesize researcher outputs into graph structure:
+Synthesize researcher outputs into graph files. **Use this exact schema:**
 
-**graph.yaml**
-- Build feature tree from Feature Mapping results
-- Assign capabilities to features based on Capability Discovery
-- Determine status from **actual code**, not old graph files:
-  - `implemented` = route/page/component exists and works
-  - `planned` = has PLAN.md but no implementation code
-  - `in-progress` = partial implementation (rare during bootstrap)
-- Establish parent-child relationships
+#### graph.yaml
 
-**capabilities.yaml**
-- Document each discovered capability
-- Include interface descriptions
-- Link to tech dependencies
-- Add modes where access patterns differ
+```yaml
+root:
+  name: Project Name
+  type: feature
+  status: implemented
+  intent: What this project does for users
+  capabilities: [capability-id, capability-id:mode]
 
-**entities.yaml**
-- List domain models
-- Document their state fields
-- Note capability triggers (e.g., "when published=true")
+features:
+  feature-id:
+    name: Feature Name
+    type: feature
+    status: implemented | planned | in-progress | broken
+    intent: What users can DO with this feature
+    parent: parent-feature-id  # or "root"
+    capabilities: [capability-id]
+```
 
-**tech.yaml**
-- List all tech dependencies
-- Categorize (database, cloud, auth, ui, processing, state)
-- Note config file locations
+#### capabilities.yaml
+
+```yaml
+capability-id:
+  name: Capability Name
+  type: capability
+  category: ui | storage | media | auth | content | export | sync
+  intent: What this enables for features
+  tech: [tech-id]
+  interface: |
+    Functions/hooks/APIs available
+```
+
+#### entities.yaml
+
+```yaml
+entity-id:
+  name: EntityName
+  type: entity
+  capabilities: [capability-id]
+  state:
+    - fieldname: type
+```
+
+#### tech.yaml
+
+```yaml
+tech-id:
+  name: Tech Name
+  type: tech
+  category: database | cloud | auth | ui | processing | state
+  purpose: What it does
+```
+
+**Status during bootstrap:** Use `implemented` for existing code, `planned` only if PLAN.md exists without implementation.
 
 ### Phase 4: Present for Review
 

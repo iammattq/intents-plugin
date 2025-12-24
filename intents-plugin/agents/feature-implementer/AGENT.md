@@ -202,6 +202,17 @@ After the implementation agent returns, validate:
 - Spawn `code-reviewer` for non-trivial chunks
 - Spawn `design-reviewer` if UI components were added
 
+**Contract Validation:**
+
+If the plan defines schemas, formats, or interfaces, verify implementation honors them:
+
+- **AGENT specs**: Check spec documents the schema (e.g., output format in Phase 3)
+- **Code generating data**: Run it and verify output structure matches plan
+- **APIs/functions**: Verify signatures, parameters, return types match spec
+- **File formats**: Verify structure, required fields, valid values match spec
+
+To validate: re-read plan section defining the contract, then check implementation artifact produces exactly that.
+
 Report validation results:
 
 ```
