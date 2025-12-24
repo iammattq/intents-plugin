@@ -104,7 +104,7 @@ Legend: [implemented] | [planned] -> plan link | [in-progress] | [broken] | [new
 - Use `|--` for intermediate children, `+--` for last child
 - Show status in brackets after name
 - For `planned` status with a `plan:` field, show `-> plan/path`
-- For `broken` status, prefix with `!` (e.g., `! broken-feature [broken]`)
+- For broken status, prefix with "!" (e.g., "! broken-feature [broken]")
 
 ### Step 5: Display Detail View (with feature-id)
 
@@ -194,7 +194,7 @@ Run /intents:validate --fix to resolve these issues.
 | `planned` | `[planned]` | Has PLAN.md, ready for implementation |
 | `in-progress` | `[in-progress]` | Currently being implemented |
 | `implemented` | `[implemented]` | Working in production |
-| `broken` | `! [broken]` | Was implemented, now failing |
+| `broken` | "! [broken]" | Was implemented, now failing |
 
 ## Algorithm Reference
 
