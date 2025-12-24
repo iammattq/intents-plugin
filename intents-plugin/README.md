@@ -409,7 +409,7 @@ Resume with `/intents:implement <feature>`.
 
 ## Contributing
 
-This plugin is part of the agents-and-skills collection. Improvements welcome:
+Improvements welcome:
 
 1. Fork the repo
 2. Create a feature branch
