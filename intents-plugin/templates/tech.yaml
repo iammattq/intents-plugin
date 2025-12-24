@@ -1,0 +1,22 @@
+# Tech Stack
+#
+# Implementation dependencies. Capabilities reference these.
+# Lowest priority for context loading (implementation details).
+#
+# Categories:
+#   database   - Data storage (Prisma, PostgreSQL, SQLite)
+#   cloud      - External services (S3, Cloudflare, Vercel)
+#   auth       - Authentication (NextAuth, Clerk, Auth0)
+#   ui         - Styling/components (Tailwind, React, shadcn)
+#   processing - Data transformation (Sharp, MDX, Culori)
+#   state      - Client state (Zustand, localStorage, Redux)
+
+# Example tech:
+#
+# tech-id:
+#   name: Tech Name
+#   type: tech
+#   category: database | cloud | auth | ui | processing | state
+#   config: path/to/config/file  # optional
+#   docs: docs/guides/tech-guide.md  # optional
+#   purpose: What it does  # use if no docs file
