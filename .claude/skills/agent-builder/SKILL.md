@@ -182,6 +182,30 @@ STOP. Before proceeding:
 [Rest of workflow...]
 ```
 
+### Instruction Following
+
+Use XML tags to improve Claude's instruction adherence:
+
+```markdown
+<constraints>
+COMPLETE ALL STEPS. DO NOT SKIP ANY STEP.
+</constraints>
+
+<process>
+## Step 1: [Action]
+Verify: [condition] → proceed.
+</process>
+
+<output_format>
+[Template]
+</output_format>
+```
+
+Key patterns:
+- `<constraints>` at top with explicit completion requirement
+- `<process>` wrapping sequential steps
+- "Verify: X → proceed" after each step
+
 ## Error Handling
 
 Every agent should handle edge cases:
