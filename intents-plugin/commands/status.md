@@ -22,7 +22,9 @@ If `.intents/` doesn't exist: Tell user to run `/intents:init`.
 
 ## Tree View (no args)
 
-Display hierarchical tree with status indicators:
+Display hierarchical tree with status indicators.
+
+**Note:** Tree view shows graph nodes only. Enhancements are not displayed here (they're "neighborhood detail", not "subway stops"). Use `status <feature>` to see enhancements for a specific feature.
 
 ```
 Features:
@@ -57,9 +59,27 @@ Capabilities (inherited): [from ancestors]
 
 Children: [list or none]
 Siblings: [other children of same parent]
+
+Enhancements: [list or none]
 ```
 
 **Inheritance:** Walk up parent chain, collect all capabilities. Children inherit all parent capabilities.
+
+### Enhancement Discovery
+
+When showing detail for a feature, scan filesystem for enhancement plans:
+
+1. Look for `docs/plans/<feature-id>/*/PLAN.md`
+2. Each subdirectory with a PLAN.md is an enhancement
+3. Display as sub-items under "Enhancements"
+
+```
+Enhancements:
+  - sorting [planned] -> docs/plans/admin-galleries/sorting/PLAN.md
+  - batch-upload [implemented]
+```
+
+Read enhancement status from PLAN.md frontmatter if present, otherwise show as "planned".
 
 ## Sync Warnings
 

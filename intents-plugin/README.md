@@ -69,16 +69,28 @@ See the feature tree, status of each feature, and any sync warnings.
 
 This runs the full R-P workflow:
 - Brainstorm approaches
+- **Classify as new feature or enhancement** (you confirm)
 - Research codebase for fit
 - Research external tech if needed
 - Refine via advocate/critic debate
 - Create PLAN.md with chunked phases
-- Add feature node to graph
+- Add feature node to graph (new features only)
+
+**Enhancement shortcut:** If you already know this enhances an existing feature:
+```
+/intents:plan sorting --enhance admin-galleries
+```
+This skips classification and creates the plan at `docs/plans/admin-galleries/sorting/` without a graph node.
 
 ### 4. Implement the feature
 
 ```
 /intents:implement user-preferences
+```
+
+For enhancements, use the path format:
+```
+/intents:implement admin-galleries/sorting
 ```
 
 This orchestrates implementation:
@@ -94,14 +106,16 @@ This orchestrates implementation:
 |---------|-------------|
 | `/intents:init` | Bootstrap `.intents/` from existing codebase |
 | `/intents:status` | Show feature tree with status |
-| `/intents:status <feature>` | Show detail for specific feature |
+| `/intents:status <feature>` | Show detail for specific feature (includes enhancements) |
 | `/intents:plan <feature>` | Run R-P workflow, create plan + graph node |
 | `/intents:implement <feature>` | Implement with status tracking |
+| `/intents:implement <parent>/<enhancement>` | Implement an enhancement plan |
 
 ### Command Options
 
 **`/intents:plan`**
 - `--parent <feature>` - Specify parent for inheritance
+- `--enhance <parent>` - Create as enhancement (no graph node, nested path)
 - `--skip-brainstorm` - Skip ideation (idea already clear)
 - `--skip-research` - Skip codebase/tech research
 
@@ -379,6 +393,30 @@ intents-plugin/
 2. **Keep graph in sync** - Update manually if you make changes outside the workflow
 3. **Use phase gates** - Don't skip manual testing between phases
 4. **Trust the chunking** - Smaller chunks keep Claude in the smart zone
+
+### Node vs Enhancement
+
+Think of the graph as a **subway map** - it shows major destinations, not every street corner.
+
+**Create a graph node when:**
+- Building a new user-facing page or flow
+- Adding a distinct domain area
+- Work is described as "Build X" or "Work on X"
+
+**Use enhancement (`--enhance`) when:**
+- Adding functionality to an existing feature
+- Work is described as "Add X to Y" or "Improve Y"
+- The change is a "neighborhood improvement", not a new destination
+
+**Examples:**
+| Idea | Type | Why |
+|------|------|-----|
+| "User preferences page" | New feature | New destination |
+| "Add sorting to galleries" | Enhancement | Adds to existing feature |
+| "Dark mode toggle" | Enhancement (usually) | Adds to settings/UI |
+| "Payment system" | New feature | New domain area |
+
+Enhancement plans live at `docs/plans/<parent>/<enhancement>/` and don't clutter the graph. Use `/intents:status <feature>` to see enhancements for a specific feature.
 
 ## Troubleshooting
 

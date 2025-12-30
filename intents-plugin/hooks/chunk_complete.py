@@ -59,15 +59,26 @@ def read_marker() -> dict | None:
         with open(MARKER_FILE, 'r') as f:
             data = json.load(f)
 
-        # Validate required fields
+        # Validate required fields exist and are non-empty strings
         required = ['chunk', 'feature', 'phase', 'description', 'timestamp']
-        if not all(key in data for key in required):
-            return None
+        for key in required:
+            if key not in data:
+                return None
+            value = data[key]
+            # phase can be int, others must be non-empty strings
+            if key == 'phase':
+                if not isinstance(value, (int, str)):
+                    return None
+            else:
+                if not isinstance(value, str) or not value.strip():
+                    return None
 
         # Check if marker is stale (older than max age)
         try:
+            from datetime import timezone
+            # Always use UTC for consistent comparison
             marker_time = datetime.fromisoformat(data['timestamp'].replace('Z', '+00:00'))
-            age = (datetime.now(marker_time.tzinfo) - marker_time).total_seconds()
+            age = (datetime.now(timezone.utc) - marker_time).total_seconds()
             if age > MARKER_MAX_AGE_SECONDS:
                 # Stale marker - delete and ignore
                 delete_marker()
@@ -190,9 +201,12 @@ def main():
     # Auto-commit
     commit_success, commit_msg = auto_commit(feature, chunk, description)
 
-    # Clean up
-    reset_retry_count()
-    delete_marker()
+    # Clean up - only reset retry count after successful marker deletion
+    if delete_marker():
+        reset_retry_count()
+    else:
+        # Marker deletion failed - still reset but log warning
+        reset_retry_count()
 
     if commit_success:
         approve(f"Chunk {chunk} complete. {commit_msg}")

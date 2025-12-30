@@ -7,6 +7,27 @@ from glob import glob
 from typing import Optional, Tuple
 
 
+# Valid feature name pattern: alphanumeric, hyphens, underscores only
+VALID_FEATURE_PATTERN = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+
+def _validate_feature_name(feature: str) -> bool:
+    """Validate feature name to prevent path traversal.
+
+    Args:
+        feature: Feature name to validate
+
+    Returns:
+        True if valid, False otherwise
+    """
+    if not feature:
+        return False
+    # Reject path separators, dots (for ..), and other suspicious chars
+    if '/' in feature or '\\' in feature or '..' in feature:
+        return False
+    return bool(VALID_FEATURE_PATTERN.match(feature))
+
+
 def find_memory_file(feature: str) -> Optional[Path]:
     """Find MEMORY.md for the given feature.
 
@@ -16,6 +37,9 @@ def find_memory_file(feature: str) -> Optional[Path]:
     Returns:
         Path to MEMORY.md if found, None otherwise
     """
+    if not _validate_feature_name(feature):
+        return None
+
     patterns = [
         f'docs/plans/{feature}/MEMORY.md',
         f'docs/plans/*/{feature}/MEMORY.md',  # Enhancement path
@@ -36,6 +60,9 @@ def find_plan_file(feature: str) -> Optional[Path]:
     Returns:
         Path to PLAN.md if found, None otherwise
     """
+    if not _validate_feature_name(feature):
+        return None
+
     patterns = [
         f'docs/plans/{feature}/PLAN.md',
         f'docs/plans/*/{feature}/PLAN.md',  # Enhancement path

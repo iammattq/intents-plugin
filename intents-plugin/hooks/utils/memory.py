@@ -2,28 +2,28 @@
 
 import re
 from pathlib import Path
-from glob import glob
 from typing import Optional
 
+# Import shared utilities from context module (avoid duplication)
+from .context import find_memory_file, _validate_feature_name
 
-def find_memory_file(feature: str) -> Optional[Path]:
-    """Find MEMORY.md for the given feature.
+
+# Valid chunk ID pattern: digit(s) followed by uppercase letter (e.g., 1A, 2B, 10C)
+VALID_CHUNK_PATTERN = re.compile(r'^\d+[A-Z]$')
+
+
+def _validate_chunk_id(chunk: str) -> bool:
+    """Validate chunk ID format.
 
     Args:
-        feature: Feature name/ID to search for
+        chunk: Chunk ID to validate (e.g., "1A", "2B")
 
     Returns:
-        Path to MEMORY.md if found, None otherwise
+        True if valid, False otherwise
     """
-    patterns = [
-        f'docs/plans/{feature}/MEMORY.md',
-        f'docs/plans/*/{feature}/MEMORY.md',  # Enhancement path
-    ]
-    for pattern in patterns:
-        matches = glob(pattern)
-        if matches:
-            return Path(matches[0])
-    return None
+    if not chunk:
+        return False
+    return bool(VALID_CHUNK_PATTERN.match(chunk))
 
 
 def update_chunk_status(feature: str, chunk: str, status: str = 'complete') -> bool:
@@ -42,6 +42,12 @@ def update_chunk_status(feature: str, chunk: str, status: str = 'complete') -> b
     Returns:
         True if update was made, False otherwise
     """
+    # Validate inputs to prevent injection
+    if not _validate_feature_name(feature):
+        return False
+    if not _validate_chunk_id(chunk):
+        return False
+
     memory_path = find_memory_file(feature)
     if not memory_path or not memory_path.exists():
         return False
@@ -51,6 +57,7 @@ def update_chunk_status(feature: str, chunk: str, status: str = 'complete') -> b
 
         # Match table row: | chunk | status | anything |
         # Capture everything after status to preserve notes
+        # chunk is already validated, so re.escape is safe
         pattern = rf'(\|\s*{re.escape(chunk)}\s*\|)\s*\w+\s*(\|.*)'
         replacement = rf'\1 {status} \2'
         updated = re.sub(pattern, replacement, content)

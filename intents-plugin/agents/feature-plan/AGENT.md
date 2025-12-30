@@ -27,6 +27,14 @@ Plans must be **implementation-ready for AI agents**:
 - **Context Isolation** - Each chunk implementable with minimal cross-referencing
 - **External Memory** - MEMORY.md tracks progress across resets
 
+## Input Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| Feature context | Yes | Problem statement, approach, trade-offs from prior phases |
+| `enhancement_parent` | No | If set, this is an enhancement - skip graph node, use nested path |
+| `is_capability` | No | If set, this is a capability - add to capabilities.yaml, use capabilities path |
+
 ## Process
 
 ### 1. Gather Input
@@ -91,11 +99,37 @@ Or adjust: [ ] Scope [ ] Phases [ ] Tasks
 ### 6. Write Files
 
 **Only after approval:**
-1. Create `docs/plans/{feature}/PLAN.md`
-2. Create `docs/plans/{feature}/MEMORY.md` (see template below)
-3. Confirm locations
 
-### 7. Update Graph
+Determine path based on classification:
+
+**If enhancement_parent is set:**
+- Path: `docs/plans/{enhancement_parent}/{feature}/`
+
+**If is_capability is set:**
+- Path: `docs/plans/capabilities/{capability}/`
+
+**If new feature:**
+- Path: `docs/plans/{feature}/`
+
+Create PLAN.md and MEMORY.md at the determined path. Confirm locations to user.
+
+### 7. Update Graph/Capabilities
+
+**If enhancement_parent is set:**
+- **Skip** graph update
+- Report: `Enhancement plan created at docs/plans/{enhancement_parent}/{feature}/`
+
+**If is_capability is set:**
+- Add to `.intents/capabilities.yaml`:
+```yaml
+capability-id:
+  name: Capability Name
+  interface: What it provides
+  tech: [dependencies]
+```
+- Report: `Capability added to .intents/capabilities.yaml`
+
+**If new feature:**
 
 If `.intents/graph.yaml` exists:
 
@@ -124,7 +158,7 @@ If no `.intents/`: Skip and note "Run /intents:init to bootstrap."
 ### 8. Prompt for Test Spec
 
 ```
-Plan written. Graph updated.
+Plan written.
 
 Next: Define test specifications (TDD)?
 - test-spec agent (recommended)

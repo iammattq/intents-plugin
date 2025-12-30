@@ -111,11 +111,11 @@ def spawn_code_review(feature: str) -> dict:
         if not changed_files:
             return {'passed': True, 'output': 'No changed files to review.'}
 
-        # Note: In a real implementation, this would spawn the code-reviewer agent
-        # For now, we return success - the actual review happens via the implement command
+        # Code review is handled by the /implement command's review stage
+        # This hook just signals that review should happen (not blocking)
         return {
             'passed': True,
-            'output': f'Code review requested for feature: {feature}\nFiles: {changed_files}'
+            'output': f'Code review skipped (handled by /implement command). Files changed:\n{changed_files}'
         }
     except Exception as e:
         return {'passed': True, 'output': f'Could not determine changed files: {e}'}
@@ -211,8 +211,9 @@ def main():
             try:
                 update_graph_status(feature, 'implemented')
             except Exception as e:
-                # Graph update failed - log but don't block
-                pass
+                # Graph update failed - log to stderr but don't block workflow
+                import sys
+                print(f"Warning: Graph update failed for {feature}: {e}", file=sys.stderr)
 
     # === Final decision ===
     if all_passed:

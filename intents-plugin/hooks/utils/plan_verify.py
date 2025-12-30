@@ -2,48 +2,10 @@
 
 import re
 from pathlib import Path
-from glob import glob
 from typing import Optional, List, Dict, Any
 
-
-def find_plan_file(feature: str) -> Optional[Path]:
-    """Find PLAN.md for the given feature.
-
-    Args:
-        feature: Feature name/ID to search for
-
-    Returns:
-        Path to PLAN.md if found, None otherwise
-    """
-    patterns = [
-        f'docs/plans/{feature}/PLAN.md',
-        f'docs/plans/*/{feature}/PLAN.md',  # Enhancement path
-    ]
-    for pattern in patterns:
-        matches = glob(pattern)
-        if matches:
-            return Path(matches[0])
-    return None
-
-
-def find_memory_file(feature: str) -> Optional[Path]:
-    """Find MEMORY.md for the given feature.
-
-    Args:
-        feature: Feature name/ID to search for
-
-    Returns:
-        Path to MEMORY.md if found, None otherwise
-    """
-    patterns = [
-        f'docs/plans/{feature}/MEMORY.md',
-        f'docs/plans/*/{feature}/MEMORY.md',
-    ]
-    for pattern in patterns:
-        matches = glob(pattern)
-        if matches:
-            return Path(matches[0])
-    return None
+# Import shared utilities from context module (avoid duplication)
+from .context import find_plan_file, find_memory_file
 
 
 def extract_ship_criteria(plan_content: str) -> List[str]:
