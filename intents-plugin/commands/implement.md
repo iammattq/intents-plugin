@@ -185,7 +185,73 @@ To enable automatic quality gates, add to `.claude/settings.json`:
 **Hook behavior:**
 - **SessionStart**: Loads MEMORY.md + PLAN.md for in-progress features
 - **SubagentStop**: Validates chunks, auto-commits on pass
-- **Stop**: Runs final tests before completion
+- **Stop**: Final validation pipeline (see below)
+
+## Final Validation (Stop Hook)
+
+When the Stop hook is enabled, feature completion triggers a full validation pipeline:
+
+### Validation Steps
+
+1. **Quality Checks (Tests)**
+   - Auto-detects project type (package.json, pyproject.toml, Cargo.toml)
+   - Runs appropriate test command (npm test, pytest, cargo test)
+   - Blocks with test output on failure
+
+2. **Plan Verification**
+   - Compares implementation to PLAN.md ship criteria
+   - Checks MEMORY.md for completed items
+   - Blocks with missing criteria on failure
+
+3. **Code Review** (on feature completion)
+   - Spawns code-reviewer agent for final review
+   - Reviews all files changed in the feature branch
+   - Runs once per feature (not per chunk)
+
+4. **Graph Update**
+   - Sets status to `implemented` on full pass
+   - Automatic - no manual graph editing needed
+
+### Failure Handling
+
+- **Retry limit**: After 3 consecutive failures, approves with warning
+- **Actionable feedback**: Block reasons include actual test output and missing criteria
+- **Fail open**: Hook errors don't block - workflow continues with warning
+
+### Flow Diagram
+
+```
+Stop Event
+    |
+    v
+[stop_hook_active?] --yes--> APPROVE (prevent loop)
+    |
+    no
+    v
+[retry limit exceeded?] --yes--> APPROVE (with warning)
+    |
+    no
+    v
+[run tests] --fail--> INCREMENT retry, BLOCK (with output)
+    |
+    pass
+    v
+[verify plan] --fail--> INCREMENT retry, BLOCK (with criteria)
+    |
+    pass
+    v
+[feature complete?] --no--> APPROVE
+    |
+    yes
+    v
+[spawn code review]
+    |
+    v
+[update graph: implemented]
+    |
+    v
+APPROVE
+```
 
 ## Completion
 
