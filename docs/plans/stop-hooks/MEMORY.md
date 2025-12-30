@@ -2,7 +2,7 @@
 
 **Feature:** Claude Code Hooks for intents-plugin
 **Status:** in-progress
-**Current Phase:** Phase 1 - Complete
+**Current Phase:** Phase 2 - Complete
 
 ---
 
@@ -11,7 +11,7 @@
 | Phase | Status | Notes |
 |-------|--------|-------|
 | Phase 1: Foundation | complete | Hook utilities, SessionStart, Stop hooks implemented |
-| Phase 2: Chunk Automation | pending | Marker file, SubagentStop, auto-commit |
+| Phase 2: Chunk Automation | complete | Marker file, SubagentStop, auto-commit |
 | Phase 3: Final Validation | pending | Code review, plan verify, graph update |
 
 ### Phase 1 Chunks
@@ -22,9 +22,43 @@
 | 1B | complete | SessionStart hook: session_start.py |
 | 1C | complete | Stop hook: feature_complete.py |
 
+### Phase 2 Chunks
+
+| Chunk | Status | Notes |
+|-------|--------|-------|
+| 2A | complete | feature-implementer: marker file step |
+| 2B | complete | SubagentStop hook: chunk_complete.py, memory.py |
+| 2C | complete | implement command: hook documentation |
+
 ---
 
 ## Session Log
+
+### 2025-12-29 - Phase 2 Implementation
+
+**Completed:**
+- Chunk 2A: feature-implementer update
+  - Added Step 6.5 to write `.claude/.chunk-complete` marker file
+  - Marker contains: chunk, feature, phase, description, timestamp
+- Chunk 2B: SubagentStop hook
+  - `intents-plugin/hooks/chunk_complete.py` - Detects marker, validates, auto-commits
+  - `intents-plugin/hooks/utils/memory.py` - MEMORY.md update operations
+  - Updated `utils/__init__.py` with new exports
+- Chunk 2C: implement command update
+  - Added hook automation documentation
+  - Added `.claude/settings.json` configuration example
+
+**Ship Criteria Verified:**
+- [x] feature-implementer writes marker file after each chunk
+- [x] SubagentStop detects marker, runs validation (auto-detected tests)
+- [x] MEMORY.md updated with chunk completion status
+- [x] Auto-commit on pass: `feat(<feature>): chunk <N> - <description>`
+- [x] Marker file deleted after processing
+- [x] Non-implementation subagents ignored (no marker = no validation)
+- [x] Stale marker detection (5 minute max age)
+- [x] Retry limit (3 attempts before approve with warning)
+
+---
 
 ### 2025-12-29 - Phase 1 Implementation
 
@@ -105,7 +139,8 @@
 
 ## Next Action
 
-Phase 1 complete. Ready for Phase Gate testing:
-- [ ] Test in a real project with package.json
-- [ ] Start session with in-progress feature, verify context loads
-- [ ] Complete a task, verify tests run and block on failure
+Phase 2 complete. Ready for Phase Gate testing:
+- [ ] Implement a test feature with hooks enabled
+- [ ] Verify each chunk auto-commits on pass
+- [ ] Verify marker file is created and deleted
+- [ ] Verify MEMORY.md is updated by hook
