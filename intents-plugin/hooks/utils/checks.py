@@ -19,7 +19,7 @@ def get_test_command() -> Optional[List[str]]:
         Test command as list of args if detected, None otherwise
     """
     if os.path.exists('package.json'):
-        return ['npm', 'test']
+        return ['pnpm', 'test']
     elif os.path.exists('pyproject.toml') or os.path.exists('setup.py'):
         return ['pytest']
     elif os.path.exists('Cargo.toml'):
