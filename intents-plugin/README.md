@@ -336,6 +336,16 @@ in-progress - Currently being implemented
            in-progress
 ```
 
+## Hooks (Optional)
+
+For automatic quality gates during implementation, see **[docs/hook-setup.md](docs/hook-setup.md)**.
+
+Hooks provide:
+- Auto-run tests after each chunk
+- Plan verification against ship criteria
+- Auto-commit on success
+- Graph status updates on feature completion
+
 ## Directory Structure
 
 ```

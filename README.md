@@ -58,6 +58,12 @@ Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
 /intents:implement user-settings
 ```
 
+## Optional: Quality Gate Hooks
+
+For automatic test running, plan verification, and auto-commits during implementation:
+
+See **[intents-plugin/docs/hook-setup.md](intents-plugin/docs/hook-setup.md)**
+
 ## Documentation
 
 See **[intents-plugin/README.md](intents-plugin/README.md)** for:
