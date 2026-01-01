@@ -265,14 +265,13 @@ next-auth:
 
 ## Agents Included
 
-This plugin includes 10 agents for the complete R-P-I workflow:
+This plugin includes 12 agents for the complete R-P-I workflow:
 
 | Agent | Phase | Purpose |
 |-------|-------|---------|
 | `codebase-analyzer` | Bootstrap | Analyze codebase, generate initial graph |
 | `codebase-researcher` | Research | Explore internal codebase for context |
 | `technical-researcher` | Research | Research external docs and APIs |
-| `feature-brainstorm` | Research | Divergent ideation for new features |
 | `feature-refine` | Research | Advocate/critic debate to refine approach |
 | `feature-plan` | Plan | Create PLAN.md, add graph node |
 | `test-spec` | Plan/Implement | Generate TDD test specifications |
@@ -280,6 +279,8 @@ This plugin includes 10 agents for the complete R-P-I workflow:
 | `code-reviewer` | Implement | Validate code quality and patterns |
 | `security-auditor` | Implement | OWASP security review |
 | `accessibility-reviewer` | Implement | WCAG compliance check |
+| `performance-reviewer` | Implement | Performance issue detection |
+| `doc-reviewer` | Implement | Documentation accuracy review |
 
 ## Skills Included
 
@@ -342,16 +343,18 @@ intents-plugin/
     plugin.json           # Plugin manifest
 
   agents/
+    accessibility-reviewer/AGENT.md
     codebase-analyzer/AGENT.md
     codebase-researcher/AGENT.md
-    technical-researcher/AGENT.md
-    feature-refine/AGENT.md
-    feature-plan/AGENT.md
-    feature-implementer/AGENT.md
-    test-spec/AGENT.md
     code-reviewer/AGENT.md
+    doc-reviewer/AGENT.md
+    feature-implementer/AGENT.md
+    feature-plan/AGENT.md
+    feature-refine/AGENT.md
+    performance-reviewer/AGENT.md
     security-auditor/AGENT.md
-    accessibility-reviewer/AGENT.md
+    technical-researcher/AGENT.md
+    test-spec/AGENT.md
 
   skills/
     intents-system/SKILL.md

@@ -66,11 +66,10 @@ Then restart Claude Code. The plugin activates when it detects `.claude-plugin/p
 
 ## What's Included
 
-**10 Agents** for the complete workflow:
+**12 Agents** for the complete workflow:
 - `codebase-analyzer` - Bootstrap graph from existing code
 - `codebase-researcher` - Explore internal codebase
 - `technical-researcher` - Research external docs/APIs
-- `feature-brainstorm` - Divergent ideation
 - `feature-refine` - Advocate/critic debate
 - `feature-plan` - Create PLAN.md + graph node
 - `test-spec` - TDD specifications
@@ -78,6 +77,8 @@ Then restart Claude Code. The plugin activates when it detects `.claude-plugin/p
 - `code-reviewer` - Quality validation
 - `security-auditor` - OWASP review
 - `accessibility-reviewer` - WCAG compliance
+- `performance-reviewer` - Performance analysis
+- `doc-reviewer` - Documentation drift detection
 
 **2 Skills:**
 - `intents-system` - Teaches Claude the graph schema
