@@ -19,109 +19,53 @@ This plugin automates the workflow that was previously manual orchestration.
 
 ## Installation
 
-Copy the plugin to your project:
+### Option 1: Plugin Mode (Recommended)
+
+Load the plugin using the `--plugin-dir` flag:
 
 ```bash
-cp -r intents-plugin/ /path/to/your/project/
+cd /path/to/your/project
+claude --plugin-dir /path/to/intents-plugin/intents-plugin
 ```
 
-Or symlink it:
+Commands are namespaced: `/intents:init`, `/intents:plan`, `/intents:implement`, etc.
+
+### Option 2: Standalone Mode
+
+Symlink contents into your project's `.claude/` directory:
 
 ```bash
-ln -s /path/to/this-repo/intents-plugin /path/to/your/project/intents-plugin
+mkdir -p /path/to/your/project/.claude
+ln -s /path/to/intents-plugin/intents-plugin/commands /path/to/your/project/.claude/commands
+ln -s /path/to/intents-plugin/intents-plugin/agents /path/to/your/project/.claude/agents
+ln -s /path/to/intents-plugin/intents-plugin/skills /path/to/your/project/.claude/skills
 ```
 
-Then restart Claude Code. The plugin activates when it detects `.claude-plugin/plugin.json`.
+Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
+
+**Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
 ## Quick Start
 
 ```bash
-# 1. Bootstrap your project's architecture graph
+# Bootstrap your project
 /intents:init
 
-# 2. See the feature tree
-/intents:status
-
-# 3. Plan a new feature
+# Plan a feature
 /intents:plan user-settings --parent admin
 
-# 4. Implement it
+# Implement it
 /intents:implement user-settings
-
-# 5. Fix any structural issues
-/intents:validate --fix
 ```
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `/intents:init` | Bootstrap `.intents/` from your codebase |
-| `/intents:status` | Show feature tree with status |
-| `/intents:status <feature>` | Show detail for specific feature |
-| `/intents:plan <feature>` | Research + Plan workflow |
-| `/intents:implement <feature>` | Implementation with tracking |
-| `/intents:validate` | Check for structural issues |
-| `/intents:validate --fix` | Fix issues interactively |
-
-## What's Included
-
-**12 Agents** for the complete workflow:
-- `codebase-analyzer` - Bootstrap graph from existing code
-- `codebase-researcher` - Explore internal codebase
-- `technical-researcher` - Research external docs/APIs
-- `feature-refine` - Advocate/critic debate
-- `feature-plan` - Create PLAN.md + graph node
-- `test-spec` - TDD specifications
-- `feature-implementer` - Chunk-by-chunk implementation
-- `code-reviewer` - Quality validation
-- `security-auditor` - OWASP review
-- `accessibility-reviewer` - WCAG compliance
-- `performance-reviewer` - Performance analysis
-- `doc-reviewer` - Documentation drift detection
-
-**2 Skills:**
-- `intents-system` - Teaches Claude the graph schema
-- `feature-brainstorm` - Ideation patterns
-
-**5 Commands** as documented above.
-
-## The Graph
-
-```yaml
-# .intents/graph.yaml
-root:
-  name: My App
-  status: implemented
-  capabilities:
-    - design-system
-
-features:
-  admin:
-    name: Admin Dashboard
-    status: implemented
-    parent: root
-    capabilities:
-      - session-auth
-      - persistence:read-write
-
-  admin-galleries:
-    name: Gallery Management
-    status: implemented
-    parent: admin           # inherits session-auth, persistence
-    capabilities:
-      - images:manage       # adds this capability
-```
-
-Features inherit capabilities from parents. Status tracks progress: `new` → `planned` → `in-progress` → `implemented`.
 
 ## Documentation
 
-See [`intents-plugin/README.md`](intents-plugin/README.md) for:
-- Complete command reference
-- Graph schema documentation
-- Best practices
-- Troubleshooting
+See **[intents-plugin/README.md](intents-plugin/README.md)** for:
+- Complete command reference and options
+- Graph schema (all 4 YAML files)
+- Agent and skill details
+- Plan structure and chunking
+- Best practices and troubleshooting
 
 ## Development
 

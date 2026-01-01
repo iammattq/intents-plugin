@@ -14,30 +14,31 @@ This plugin automates the orchestration that was previously manual.
 
 ## Installation
 
-### Option 1: Copy to Project
+### Option 1: Plugin Mode (Recommended)
 
-Copy the `intents-plugin/` folder to your project root:
-
-```bash
-cp -r intents-plugin/ /path/to/your/project/
-```
-
-### Option 2: Clone and Link
-
-Clone this repo and symlink to your projects:
+Load the plugin using the `--plugin-dir` flag:
 
 ```bash
-git clone https://github.com/your-org/intents-plugin.git
-ln -s /path/to/intents-plugin /path/to/your/project/intents-plugin
+cd /path/to/your/project
+claude --plugin-dir /path/to/intents-plugin/intents-plugin
 ```
 
-### Verify Installation
+Commands are namespaced: `/intents:init`, `/intents:plan`, `/intents:implement`, etc.
 
-The plugin is detected when Claude Code sees the `.claude-plugin/plugin.json` file in your project. After installation:
+### Option 2: Standalone Mode
 
-1. Restart Claude Code (or open a new conversation)
-2. The `intents-system` skill will activate when `.intents/` exists
-3. Commands become available: `/intents:init`, `/intents:status`, `/intents:plan`, `/intents:implement`
+Symlink contents into your project's `.claude/` directory:
+
+```bash
+mkdir -p /path/to/your/project/.claude
+ln -s /path/to/intents-plugin/intents-plugin/commands /path/to/your/project/.claude/commands
+ln -s /path/to/intents-plugin/intents-plugin/agents /path/to/your/project/.claude/agents
+ln -s /path/to/intents-plugin/intents-plugin/skills /path/to/your/project/.claude/skills
+```
+
+Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
+
+**Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
 ## Quick Start
 
