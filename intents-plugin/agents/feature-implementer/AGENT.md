@@ -1,6 +1,6 @@
 ---
 name: feature-implementer
-description: Use WHEN implementing planned features. Orchestrates chunk-by-chunk implementation, spawns agents, validates work against plan, updates MEMORY.md. Full access.
+description: MUST BE USED for all planned feature implementation. ALWAYS spawn this agent via Task tool - never implement features directly. Orchestrates chunk-by-chunk implementation, validates work against plan, updates MEMORY.md. Full access.
 tools: Read, Grep, Glob, Bash, Task, Write, Edit
 model: opus
 ---

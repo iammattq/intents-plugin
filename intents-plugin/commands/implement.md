@@ -18,6 +18,12 @@ Orchestrate implementation of a planned feature.
 
 ## Workflow
 
+<constraints>
+You are an ORCHESTRATOR, not an implementer.
+You MUST use the Task tool to spawn each agent below - do NOT perform implementation, testing, or review work yourself.
+Each Stage 4, 5, 6 requires spawning the designated agent(s).
+</constraints>
+
 ### Stage 1: Validate Prerequisites
 
 Determine lookup method based on argument format:
@@ -65,14 +71,21 @@ feature-id:
 
 ### Stage 4: Test Spec (unless --skip-tests)
 
-Spawn `test-spec` agent for this feature.
+**MUST spawn** the `test-spec` agent using the Task tool:
+
+```
+Task: test-spec
+
+Feature: <feature-id>
+Plan: docs/plans/<feature>/PLAN.md
+```
 
 **✓ CHECKPOINT:** Show results, ask user to continue.
 **Error →** Resume agent to fix, then checkpoint again.
 
 ### Stage 5: Feature Implementer
 
-Spawn `feature-implementer` agent:
+**MUST spawn** the `feature-implementer` agent (same Task tool pattern as Stage 4):
 
 **If feature:**
 ```
@@ -95,23 +108,12 @@ Agent handles internally:
 - Phase gates
 - Writing `.claude/.chunk-complete` marker after each chunk
 
-**Hook Automation (if enabled):**
-
-When SubagentStop hook is configured, chunk completion triggers:
-1. Marker file detected by hook
-2. Tests run automatically (auto-detected: npm test/pytest/cargo test)
-3. On pass: MEMORY.md updated, changes auto-committed
-4. On fail: Block with test output, retry up to 3 times
-5. Marker deleted after processing
-
-This provides deterministic quality gates without relying on Claude remembering to run tests.
-
 **✓ CHECKPOINT:** Show results, ask user to continue.
 **Error →** Resume agent to fix, then checkpoint again.
 
 ### Stage 6: Review Loop (unless --skip-review)
 
-Spawn review agents based on feature:
+**MUST spawn** review agents using the Task tool (same pattern as Stage 4):
 
 | Agent | When |
 |-------|------|
@@ -150,108 +152,9 @@ Update graph status:
 
 Re-run command to resume. The `feature-implementer` reads MEMORY.md and continues from last completed chunk.
 
-## Hook Configuration
+## Hooks (Optional)
 
-To enable automatic quality gates, add to `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [{
-      "matcher": "",
-      "hooks": [{
-        "type": "command",
-        "command": "python3 intents-plugin/hooks/session_start.py"
-      }]
-    }],
-    "SubagentStop": [{
-      "matcher": "",
-      "hooks": [{
-        "type": "command",
-        "command": "python3 intents-plugin/hooks/chunk_complete.py"
-      }]
-    }],
-    "Stop": [{
-      "matcher": "",
-      "hooks": [{
-        "type": "command",
-        "command": "python3 intents-plugin/hooks/feature_complete.py"
-      }]
-    }]
-  }
-}
-```
-
-**Hook behavior:**
-- **SessionStart**: Loads MEMORY.md + PLAN.md for in-progress features
-- **SubagentStop**: Validates chunks, auto-commits on pass
-- **Stop**: Final validation pipeline (see below)
-
-## Final Validation (Stop Hook)
-
-When the Stop hook is enabled, feature completion triggers a full validation pipeline:
-
-### Validation Steps
-
-1. **Quality Checks (Tests)**
-   - Auto-detects project type (package.json, pyproject.toml, Cargo.toml)
-   - Runs appropriate test command (npm test, pytest, cargo test)
-   - Blocks with test output on failure
-
-2. **Plan Verification**
-   - Compares implementation to PLAN.md ship criteria
-   - Checks MEMORY.md for completed items
-   - Blocks with missing criteria on failure
-
-3. **Code Review** (on feature completion)
-   - Spawns code-reviewer agent for final review
-   - Reviews all files changed in the feature branch
-   - Runs once per feature (not per chunk)
-
-4. **Graph Update**
-   - Sets status to `implemented` on full pass
-   - Automatic - no manual graph editing needed
-
-### Failure Handling
-
-- **Retry limit**: After 3 consecutive failures, approves with warning
-- **Actionable feedback**: Block reasons include actual test output and missing criteria
-- **Fail open**: Hook errors don't block - workflow continues with warning
-
-### Flow Diagram
-
-```
-Stop Event
-    |
-    v
-[stop_hook_active?] --yes--> APPROVE (prevent loop)
-    |
-    no
-    v
-[retry limit exceeded?] --yes--> APPROVE (with warning)
-    |
-    no
-    v
-[run tests] --fail--> INCREMENT retry, BLOCK (with output)
-    |
-    pass
-    v
-[verify plan] --fail--> INCREMENT retry, BLOCK (with criteria)
-    |
-    pass
-    v
-[feature complete?] --no--> APPROVE
-    |
-    yes
-    v
-[spawn code review]
-    |
-    v
-[update graph: implemented]
-    |
-    v
-APPROVE
-```
+Quality gates can run automatically via hooks. See [docs/hook-setup.md](../docs/hook-setup.md) for configuration.
 
 ## Completion
 
