@@ -1,6 +1,6 @@
 ---
 description: Implement a planned feature with quality checks. Use when ready to build.
-argument-hint: <feature-id> [--skip-tests] [--skip-review]
+argument-hint: <feature-id | parent/enhancement | capabilities/name> [--skip-tests] [--skip-review]
 ---
 
 # /intents:implement
@@ -11,14 +11,31 @@ Orchestrate implementation of a planned feature.
 
 ```
 /intents:implement <feature-id>
+/intents:implement <parent>/<enhancement>
+/intents:implement capabilities/<capability>
 /intents:implement <feature-id> --skip-tests
-/intents:implement <feature-id> --skip-review
 ```
 
 ## Workflow
 
+<constraints>
+You are an ORCHESTRATOR, not an implementer.
+You MUST use the Task tool to spawn each agent below - do NOT perform implementation, testing, or review work yourself.
+Each Stage 4, 5, 6 requires spawning the designated agent(s).
+</constraints>
+
 ### Stage 1: Validate Prerequisites
 
+Determine lookup method based on argument format:
+
+**If argument contains `/` (path format):**
+```
+Parse as path (e.g., parent/enhancement or capabilities/name)
+Read plan directly from docs/plans/<path>/PLAN.md
+Skip graph lookup (enhancements and capabilities don't have graph nodes)
+```
+
+**If no `/` (feature-id format):**
 ```
 Read .intents/graph.yaml → find feature by ID
 Verify docs/plans/<feature>/PLAN.md exists
@@ -40,29 +57,48 @@ If on main: create feature branch `feature/<feature-id>` and switch to it.
 
 ### Stage 3: Update Graph Status
 
+**If feature (not enhancement):**
 ```yaml
 # .intents/graph.yaml
 feature-id:
   status: in-progress
 ```
 
+**If path format (enhancement or capability):**
+- Skip graph update (no graph nodes for these)
+
 **Error → STOP.** Inform user.
 
 ### Stage 4: Test Spec (unless --skip-tests)
 
-Spawn `test-spec` agent for this feature.
+**MUST spawn** the `test-spec` agent using the Task tool:
+
+```
+Task: test-spec
+
+Feature: <feature-id>
+Plan: docs/plans/<feature>/PLAN.md
+```
 
 **✓ CHECKPOINT:** Show results, ask user to continue.
 **Error →** Resume agent to fix, then checkpoint again.
 
 ### Stage 5: Feature Implementer
 
-Spawn `feature-implementer` agent:
+**MUST spawn** the `feature-implementer` agent (same Task tool pattern as Stage 4):
 
+**If feature:**
 ```
 Feature: <feature-id>
 Plan: docs/plans/<feature>/PLAN.md
 Memory: docs/plans/<feature>/MEMORY.md
+```
+
+**If path format (enhancement or capability):**
+```
+Feature: <path>
+Plan: docs/plans/<path>/PLAN.md
+Memory: docs/plans/<path>/MEMORY.md
 ```
 
 Agent handles internally:
@@ -70,13 +106,14 @@ Agent handles internally:
 - Validation against plan
 - MEMORY.md updates
 - Phase gates
+- Writing `.claude/.chunk-complete` marker after each chunk
 
 **✓ CHECKPOINT:** Show results, ask user to continue.
 **Error →** Resume agent to fix, then checkpoint again.
 
 ### Stage 6: Review Loop (unless --skip-review)
 
-Spawn review agents based on feature:
+**MUST spawn** review agents using the Task tool (same pattern as Stage 4):
 
 | Agent | When |
 |-------|------|
@@ -94,9 +131,15 @@ Spawn review agents based on feature:
 
 ### Stage 7: Finalize
 
+**If feature (not enhancement):**
 Update graph status:
 - Success → `implemented`
 - User abort → `broken` (log reason)
+
+**If path format (enhancement or capability):**
+- No graph update needed
+- If capability: verify added to `.intents/capabilities.yaml`
+- Report completion with plan path
 
 ## Options
 
@@ -108,6 +151,10 @@ Update graph status:
 ## Resume
 
 Re-run command to resume. The `feature-implementer` reads MEMORY.md and continues from last completed chunk.
+
+## Hooks (Optional)
+
+Quality gates can run automatically via hooks. See [docs/hook-setup.md](../docs/hook-setup.md) for configuration.
 
 ## Completion
 

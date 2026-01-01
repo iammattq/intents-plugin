@@ -1,61 +1,8 @@
 {
-  "name": "intents-plugin",
+  "name": "intents",
   "version": "0.1.0",
   "description": "R-P-I workflow plugin with graph-based architecture tracking",
-  "commands": [
-    {
-      "name": "intents:init",
-      "description": "Bootstrap .intents/ folder from existing codebase",
-      "file": "commands/init.md"
-    },
-    {
-      "name": "intents:status",
-      "description": "Show feature graph status and inheritance",
-      "file": "commands/status.md"
-    },
-    {
-      "name": "intents:plan",
-      "description": "Run research-to-plan workflow and create graph node",
-      "file": "commands/plan.md"
-    },
-    {
-      "name": "intents:implement",
-      "description": "Implement planned feature with graph status tracking",
-      "file": "commands/implement.md"
-    }
-  ],
-  "skills": [
-    {
-      "name": "intents-system",
-      "description": "Graph schema teaching and inheritance rules",
-      "file": "skills/intents-system/SKILL.md"
-    },
-    {
-      "name": "feature-brainstorm",
-      "description": "Divergent ideation for new features",
-      "file": "skills/feature-brainstorm/SKILL.md"
-    }
-  ],
-  "agents": [
-    "agents/codebase-analyzer/AGENT.md",
-    "agents/codebase-researcher/AGENT.md",
-    "agents/technical-researcher/AGENT.md",
-    "agents/feature-refine/AGENT.md",
-    "agents/feature-plan/AGENT.md",
-    "agents/feature-implementer/AGENT.md",
-    "agents/test-spec/AGENT.md",
-    "agents/code-reviewer/AGENT.md",
-    "agents/security-auditor/AGENT.md",
-    "agents/accessibility-reviewer/AGENT.md"
-  ],
-  "templates": [
-    "templates/graph.yaml",
-    "templates/capabilities.yaml",
-    "templates/entities.yaml",
-    "templates/tech.yaml"
-  ],
-  "activation": {
-    "detection": ".intents/",
-    "auto_load_skill": "intents-system"
+  "author": {
+    "name": "intents-plugin"
   }
 }

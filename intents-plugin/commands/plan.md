@@ -1,6 +1,6 @@
 ---
 description: Create a feature plan with research workflow. Use when planning new features.
-argument-hint: <description> [--parent feature] [--skip-brainstorm] [--skip-research]
+argument-hint: <description> [--parent feature] [--enhance parent] [--skip-brainstorm] [--skip-research]
 ---
 
 # /intents:plan
@@ -12,6 +12,7 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 ```
 /intents:plan <feature-description>
 /intents:plan <description> --parent <parent-feature>
+/intents:plan <description> --enhance <parent-feature>
 /intents:plan <description> --skip-brainstorm
 /intents:plan <description> --skip-research
 ```
@@ -30,8 +31,11 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 
 Use the `feature-brainstorm` skill patterns to explore with the user:
 - Understand the actual problem (not assumed solution)
+- Prompt the user to share their ideas and debate them 
 - Explore 3-5 approaches with honest skepticism
+- offer to do small bits of research to help clarify topics and gather insights
 - Surface the real options: do nothing, minimal, full
+- Allow the user to decide the path forward with you as a thinking partner and counter point.
 
 <checkpoint>
 STOP. Present brainstorm summary to user:
@@ -40,6 +44,40 @@ STOP. Present brainstorm summary to user:
 - Your recommendation
 
 Wait for user to pick a direction before proceeding.
+</checkpoint>
+
+### Phase 1.5: Classification (unless --enhance provided)
+
+After brainstorm, classify the work before proceeding:
+
+1. Read `.intents/graph.yaml` for existing features
+2. If no graph exists: **STOP** - tell user to run `/intents:init`
+3. Analyze user input + brainstorm for classification signals:
+   - "Add X to Y", "improve X" → enhancement
+   - "X service", "X system", reusable across features → capability
+   - New page/flow/destination → new feature
+4. Present recommendation and ask user to confirm:
+   - `(f)` New feature - creates graph node
+   - `(e)` Enhancement - plan only, no node
+   - `(c)` Capability - adds to capabilities.yaml
+
+5. User confirms classification
+
+**If enhancement:**
+- Set `enhancement_parent` to the parent feature ID
+- Plan path: `docs/plans/<parent>/<feature>/`
+- Skip graph node creation
+
+**If capability:**
+- Plan path: `docs/plans/capabilities/<capability>/`
+- Add to `.intents/capabilities.yaml` instead of graph
+- Skip graph node creation
+
+**If new feature:**
+- Proceed normally (graph node will be created)
+
+<checkpoint>
+STOP. Wait for user to confirm classification before proceeding.
 </checkpoint>
 
 ### Phase 2: Codebase Research (unless --skip-research)
@@ -82,6 +120,14 @@ Wait for user approval before planning.
 ### Phase 5: Planning
 
 Spawn `feature-plan` agent with all context:
+
+**If enhancement (enhancement_parent is set):**
+- Pass `enhancement_parent` to the agent
+- Creates `docs/plans/<enhancement_parent>/<feature>/PLAN.md`
+- Creates `docs/plans/<enhancement_parent>/<feature>/MEMORY.md`
+- **Skip** adding node to graph.yaml
+
+**If new feature:**
 - Creates `docs/plans/<feature>/PLAN.md`
 - Creates `docs/plans/<feature>/MEMORY.md`
 - Adds node to `.intents/graph.yaml` with `status: planned`
@@ -90,8 +136,21 @@ The agent will present draft plan for user approval before writing files.
 
 ## Completion
 
-Report results:
+Report results based on classification:
 
+**For enhancements:**
+```
+Plan created:
+  - docs/plans/<parent>/<feature>/PLAN.md
+  - docs/plans/<parent>/<feature>/MEMORY.md
+
+Enhancement to: <parent-id>
+  (No graph node created - codebase is source of truth)
+
+Next: /intents:implement <parent>/<feature>
+```
+
+**For new features:**
 ```
 Plan created:
   - docs/plans/<feature>/PLAN.md
@@ -110,5 +169,6 @@ Next: /intents:implement <feature-id>
 | Option | Effect |
 |--------|--------|
 | `--parent <feature>` | Specify parent for capability inheritance |
+| `--enhance <parent>` | Create enhancement plan under parent (skip classification, no graph node) |
 | `--skip-brainstorm` | Idea already clear, skip ideation |
 | `--skip-research` | Context known, skip codebase/technical research |

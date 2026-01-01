@@ -14,30 +14,31 @@ This plugin automates the orchestration that was previously manual.
 
 ## Installation
 
-### Option 1: Copy to Project
+### Option 1: Plugin Mode (Recommended)
 
-Copy the `intents-plugin/` folder to your project root:
-
-```bash
-cp -r intents-plugin/ /path/to/your/project/
-```
-
-### Option 2: Clone and Link
-
-Clone this repo and symlink to your projects:
+Load the plugin using the `--plugin-dir` flag:
 
 ```bash
-git clone https://github.com/your-org/intents-plugin.git
-ln -s /path/to/intents-plugin /path/to/your/project/intents-plugin
+cd /path/to/your/project
+claude --plugin-dir /path/to/intents-plugin/intents-plugin
 ```
 
-### Verify Installation
+Commands are namespaced: `/intents:init`, `/intents:plan`, `/intents:implement`, etc.
 
-The plugin is detected when Claude Code sees the `.claude-plugin/plugin.json` file in your project. After installation:
+### Option 2: Standalone Mode
 
-1. Restart Claude Code (or open a new conversation)
-2. The `intents-system` skill will activate when `.intents/` exists
-3. Commands become available: `/intents:init`, `/intents:status`, `/intents:plan`, `/intents:implement`
+Symlink contents into your project's `.claude/` directory:
+
+```bash
+mkdir -p /path/to/your/project/.claude
+ln -s /path/to/intents-plugin/intents-plugin/commands /path/to/your/project/.claude/commands
+ln -s /path/to/intents-plugin/intents-plugin/agents /path/to/your/project/.claude/agents
+ln -s /path/to/intents-plugin/intents-plugin/skills /path/to/your/project/.claude/skills
+```
+
+Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
+
+**Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
 ## Quick Start
 
@@ -69,16 +70,28 @@ See the feature tree, status of each feature, and any sync warnings.
 
 This runs the full R-P workflow:
 - Brainstorm approaches
+- **Classify as new feature or enhancement** (you confirm)
 - Research codebase for fit
 - Research external tech if needed
 - Refine via advocate/critic debate
 - Create PLAN.md with chunked phases
-- Add feature node to graph
+- Add feature node to graph (new features only)
+
+**Enhancement shortcut:** If you already know this enhances an existing feature:
+```
+/intents:plan sorting --enhance admin-galleries
+```
+This skips classification and creates the plan at `docs/plans/admin-galleries/sorting/` without a graph node.
 
 ### 4. Implement the feature
 
 ```
 /intents:implement user-preferences
+```
+
+For enhancements, use the path format:
+```
+/intents:implement admin-galleries/sorting
 ```
 
 This orchestrates implementation:
@@ -94,14 +107,16 @@ This orchestrates implementation:
 |---------|-------------|
 | `/intents:init` | Bootstrap `.intents/` from existing codebase |
 | `/intents:status` | Show feature tree with status |
-| `/intents:status <feature>` | Show detail for specific feature |
+| `/intents:status <feature>` | Show detail for specific feature (includes enhancements) |
 | `/intents:plan <feature>` | Run R-P workflow, create plan + graph node |
 | `/intents:implement <feature>` | Implement with status tracking |
+| `/intents:implement <parent>/<enhancement>` | Implement an enhancement plan |
 
 ### Command Options
 
 **`/intents:plan`**
 - `--parent <feature>` - Specify parent for inheritance
+- `--enhance <parent>` - Create as enhancement (no graph node, nested path)
 - `--skip-brainstorm` - Skip ideation (idea already clear)
 - `--skip-research` - Skip codebase/tech research
 
@@ -251,14 +266,13 @@ next-auth:
 
 ## Agents Included
 
-This plugin includes 10 agents for the complete R-P-I workflow:
+This plugin includes 12 agents for the complete R-P-I workflow:
 
 | Agent | Phase | Purpose |
 |-------|-------|---------|
 | `codebase-analyzer` | Bootstrap | Analyze codebase, generate initial graph |
 | `codebase-researcher` | Research | Explore internal codebase for context |
 | `technical-researcher` | Research | Research external docs and APIs |
-| `feature-brainstorm` | Research | Divergent ideation for new features |
 | `feature-refine` | Research | Advocate/critic debate to refine approach |
 | `feature-plan` | Plan | Create PLAN.md, add graph node |
 | `test-spec` | Plan/Implement | Generate TDD test specifications |
@@ -266,6 +280,8 @@ This plugin includes 10 agents for the complete R-P-I workflow:
 | `code-reviewer` | Implement | Validate code quality and patterns |
 | `security-auditor` | Implement | OWASP security review |
 | `accessibility-reviewer` | Implement | WCAG compliance check |
+| `performance-reviewer` | Implement | Performance issue detection |
+| `doc-reviewer` | Implement | Documentation accuracy review |
 
 ## Skills Included
 
@@ -328,16 +344,18 @@ intents-plugin/
     plugin.json           # Plugin manifest
 
   agents/
+    accessibility-reviewer/AGENT.md
     codebase-analyzer/AGENT.md
     codebase-researcher/AGENT.md
-    technical-researcher/AGENT.md
-    feature-refine/AGENT.md
-    feature-plan/AGENT.md
-    feature-implementer/AGENT.md
-    test-spec/AGENT.md
     code-reviewer/AGENT.md
+    doc-reviewer/AGENT.md
+    feature-implementer/AGENT.md
+    feature-plan/AGENT.md
+    feature-refine/AGENT.md
+    performance-reviewer/AGENT.md
     security-auditor/AGENT.md
-    accessibility-reviewer/AGENT.md
+    technical-researcher/AGENT.md
+    test-spec/AGENT.md
 
   skills/
     intents-system/SKILL.md
@@ -379,6 +397,30 @@ intents-plugin/
 2. **Keep graph in sync** - Update manually if you make changes outside the workflow
 3. **Use phase gates** - Don't skip manual testing between phases
 4. **Trust the chunking** - Smaller chunks keep Claude in the smart zone
+
+### Node vs Enhancement
+
+Think of the graph as a **subway map** - it shows major destinations, not every street corner.
+
+**Create a graph node when:**
+- Building a new user-facing page or flow
+- Adding a distinct domain area
+- Work is described as "Build X" or "Work on X"
+
+**Use enhancement (`--enhance`) when:**
+- Adding functionality to an existing feature
+- Work is described as "Add X to Y" or "Improve Y"
+- The change is a "neighborhood improvement", not a new destination
+
+**Examples:**
+| Idea | Type | Why |
+|------|------|-----|
+| "User preferences page" | New feature | New destination |
+| "Add sorting to galleries" | Enhancement | Adds to existing feature |
+| "Dark mode toggle" | Enhancement (usually) | Adds to settings/UI |
+| "Payment system" | New feature | New domain area |
+
+Enhancement plans live at `docs/plans/<parent>/<enhancement>/` and don't clutter the graph. Use `/intents:status <feature>` to see enhancements for a specific feature.
 
 ## Troubleshooting
 

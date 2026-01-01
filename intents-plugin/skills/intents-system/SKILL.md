@@ -284,6 +284,83 @@ project:
     - published: boolean
 ```
 
+## Subway Map Mental Model
+
+Think of the graph as a **subway map**, not a street map:
+
+| Concept | Graph Equivalent | Example |
+|---------|------------------|---------|
+| **Subway stops** | Feature nodes | `admin-galleries`, `photography` |
+| **City utilities** | Capabilities | `images`, `persistence`, `session-auth` |
+| **Neighborhood improvements** | Enhancement plans | "Add sorting to galleries" |
+
+**Key insight:** Not every plan needs a node. The graph shows **major destinations** for orientation. Enhancements are neighborhood improvements - they exist in plans but don't clutter the subway map.
+
+### When to Create a Node
+
+Create a graph node when the work is a **new destination**:
+- New user-facing page or flow
+- New top-level capability
+- Distinct domain area
+
+### When NOT to Create a Node
+
+Skip the node when the work is an **enhancement to an existing destination**:
+- "Add X to Y" - enhancement to Y
+- "Improve X" - enhancement to X
+- Bug fixes, performance improvements
+- New options/settings for existing features
+
+Plans can exist at `docs/plans/<parent>/<enhancement>/` without graph nodes.
+
+## Classification Guide
+
+After brainstorming a new idea, classify it before planning:
+
+### Two-Question Heuristic
+
+**Question 1: Feature or Enabler?**
+
+"Does this enable other features, or is it something users directly experience?"
+
+- **Enables other features** → Likely a **capability** (add to `capabilities.yaml`)
+- **Users directly experience it** → Continue to Question 2
+
+**Question 2: Named Work or Scoped Work?**
+
+"If assigning this work, how would I describe it?"
+
+| Description Pattern | Classification |
+|---------------------|----------------|
+| "Work on X" | New feature (needs node) |
+| "Add X to Y" | Enhancement to Y (no node) |
+| "Improve X" | Enhancement to X (no node) |
+| "Build the X system" | New feature (needs node) |
+| "Add X capability" | Capability (add to capabilities.yaml) |
+
+### Classification Examples
+
+| Idea | Classification | Why |
+|------|----------------|-----|
+| "User preferences page" | **New feature** | New destination in the app |
+| "Add sorting to galleries" | **Enhancement** to admin-galleries | Adds to existing feature |
+| "Image processing service" | **Capability** | Reusable across multiple features |
+| "Session authentication" | **Capability** | Enables other features, not a destination |
+| "PDF export" | **Capability** | Reusable tool, no dedicated route |
+| "Rate limiting" | **Capability** | Infrastructure, used everywhere |
+| "Dark mode support" | **Capability** or enhancement | Theme system = capability; toggle in settings = enhancement |
+| "Login/signup flow" | **New feature** | Even though auth is a capability, the UX flow is a destination |
+| "Fix gallery upload bug" | Enhancement (or just fix) | No plan needed for simple bug |
+
+### Inference Signals
+
+When classifying user input:
+- **Keywords**: "add X to Y", "improve X", "enhance X" → enhancement
+- **Keywords**: "X service", "X system", "X infrastructure" → capability
+- **Problem scope**: Issue scoped to existing feature → enhancement
+- **New user flow**: New page or distinct destination → new feature
+- **Reusable across features**: Used by multiple features → capability
+
 ## Common Patterns
 
 ### Adding a New Capability
@@ -320,3 +397,9 @@ Look for:
 - Not every helper function needs a capability
 - Capabilities are reusable interfaces, not implementation details
 - Features are user-facing value, not internal modules
+- **Not every plan needs a node** - see Classification Guide above
+
+**Classification matters:**
+- New destinations get nodes (subway stops)
+- Enhancements get plans without nodes (neighborhood improvements)
+- When in doubt, use the work assignment heuristic: "Work on X" vs "Add X to Y"
