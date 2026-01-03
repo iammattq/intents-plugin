@@ -276,7 +276,7 @@ This plugin includes 12 agents for the complete R-P-I workflow:
 | `feature-refine` | Research | Advocate/critic debate to refine approach |
 | `feature-plan` | Plan | Create PLAN.md, add graph node |
 | `test-spec` | Plan/Implement | Generate TDD test specifications |
-| `feature-implementer` | Implement | Orchestrate chunk-by-chunk implementation |
+| `chunk-implementer` | Implement | Implement single chunk, return validation report |
 | `code-reviewer` | Implement | Validate code quality and patterns |
 | `security-auditor` | Implement | OWASP security review |
 | `accessibility-reviewer` | Implement | WCAG compliance check |
@@ -359,7 +359,7 @@ intents-plugin/
     codebase-researcher/AGENT.md
     code-reviewer/AGENT.md
     doc-reviewer/AGENT.md
-    feature-implementer/AGENT.md
+    chunk-implementer/AGENT.md
     feature-plan/AGENT.md
     feature-refine/AGENT.md
     performance-reviewer/AGENT.md

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """SubagentStop hook: Detect chunk completion marker, validate, auto-commit.
 
-This hook is triggered when a subagent (like feature-implementer) stops.
+This hook is triggered when subagents stop (typically chunk-implementer via /implement).
 It checks for a .claude/.chunk-complete marker file, runs validation,
 updates MEMORY.md, auto-commits on pass, and cleans up the marker.
 

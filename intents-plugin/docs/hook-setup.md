@@ -44,7 +44,7 @@ Add to `.claude/settings.json`:
 
 ## SubagentStop: Chunk Validation
 
-When `feature-implementer` writes `.claude/.chunk-complete` marker:
+When `/implement` command writes `.claude/.chunk-complete` marker after each chunk:
 
 1. Marker file detected by hook
 2. Tests run automatically (auto-detected: npm test/pytest/cargo test)

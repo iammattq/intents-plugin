@@ -264,13 +264,13 @@ Purpose: Coordinate multi-step workflows, spawn and validate sub-agents.
 
 ```yaml
 ---
-name: feature-implementer
-description: Use WHEN ready to implement a planned feature. Orchestrates chunks, spawns agents, validates against plan.
-tools: Read, Grep, Glob, Bash, Task, Write, Edit
-model: opus
+name: chunk-implementer
+description: Use WHEN implementing ONE chunk from a plan. Spawns general-purpose, validates output, returns report.
+tools: Read, Grep, Glob, Bash, Task
+model: sonnet
 ---
 
-You orchestrate implementation. Begin responses with: `[🔧 IMPLEMENTER]`
+You implement ONE chunk. Begin responses with: `[CHUNK IMPLEMENTER]`
 
 ## CRITICAL: Validation Protocol
 [Most important instructions AT TOP - LLMs prioritize beginning/end]

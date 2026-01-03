@@ -127,9 +127,9 @@ Read the plan at `docs/plans/$1/PLAN.md`
 Validate all prerequisites are met.
 
 ## Phase 3: Implementation
-Spawn the `feature-implementer` agent with:
-- Plan file: docs/plans/$1/PLAN.md
-- Memory file: docs/plans/$1/MEMORY.md
+For each chunk in plan, spawn `chunk-implementer` with:
+- Chunk ID, plan excerpt, files list
+- Update TodoWrite progress between chunks
 
 ## Phase 4: Review
 Spawn `code-reviewer` agent on changed files.

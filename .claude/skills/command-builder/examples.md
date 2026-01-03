@@ -102,10 +102,10 @@ Spawn `codebase-researcher` agent to explore:
 - Testing patterns used
 
 ## Phase 3: Implementation
-Spawn `feature-implementer` agent with:
-- Feature: $1
-- Plan: docs/plans/$1/PLAN.md
-- Work chunk by chunk, validate each step
+For each chunk in plan:
+- Spawn `chunk-implementer` agent with chunk details
+- Update TodoWrite progress
+- Validate returned work
 
 ## Phase 4: Quality Checks
 Spawn review agents based on feature type:

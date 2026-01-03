@@ -20,8 +20,8 @@ Orchestrate implementation of a planned feature.
 
 <constraints>
 You are an ORCHESTRATOR, not an implementer.
-You MUST use the Task tool to spawn each agent below - do NOT perform implementation, testing, or review work yourself.
-Each Stage 4, 5, 6 requires spawning the designated agent(s).
+You MUST use the Task tool to spawn agents - do NOT perform implementation, testing, or review work yourself.
+Stage 4 and 6 spawn agents. Stage 5 orchestrates the chunk loop (spawning chunk-implementer for each chunk).
 </constraints>
 
 ### Stage 1: Validate Prerequisites
@@ -83,33 +83,107 @@ Plan: docs/plans/<feature>/PLAN.md
 **✓ CHECKPOINT:** Show results, ask user to continue.
 **Error →** Resume agent to fix, then checkpoint again.
 
-### Stage 5: Feature Implementer
+### Stage 5: Implementation Loop
 
-**MUST spawn** the `feature-implementer` agent (same Task tool pattern as Stage 4):
+**Command orchestrates chunks with visible TodoWrite progress.**
 
-**If feature:**
-```
-Feature: <feature-id>
-Plan: docs/plans/<feature>/PLAN.md
-Memory: docs/plans/<feature>/MEMORY.md
-```
+#### 5.1: Parse Plan Structure
 
-**If path format (enhancement or capability):**
 ```
-Feature: <path>
-Plan: docs/plans/<path>/PLAN.md
-Memory: docs/plans/<path>/MEMORY.md
+Read: docs/plans/<feature>/PLAN.md
+Read: docs/plans/<feature>/MEMORY.md
+
+Extract:
+- All phases and their chunks
+- Chunk IDs, scopes, files, ship criteria
+- Which chunks are already complete (from MEMORY.md)
 ```
 
-Agent handles internally:
-- Chunk-by-chunk implementation
-- Validation against plan
-- MEMORY.md updates
-- Phase gates
-- Writing `.claude/.chunk-complete` marker after each chunk
+#### 5.2: Initialize TodoWrite
 
-**✓ CHECKPOINT:** Show results, ask user to continue.
-**Error →** Resume agent to fix, then checkpoint again.
+Create TodoWrite with all chunks visible to user:
+
+```json
+{
+  "todos": [
+    {"id": "1a", "content": "Chunk 1A: [scope]", "status": "completed"},
+    {"id": "1b", "content": "Chunk 1B: [scope]", "status": "pending"},
+    {"id": "1c", "content": "Chunk 1C: [scope]", "status": "pending"}
+  ]
+}
+```
+
+Mark already-completed chunks from MEMORY.md as "completed".
+
+#### 5.3: Chunk Loop
+
+For each pending chunk:
+
+**a. Mark in_progress:**
+```json
+{"id": "1b", "content": "Chunk 1B: [scope]", "activeForm": "Implementing [scope]", "status": "in_progress"}
+```
+
+**b. Spawn chunk-implementer:**
+```
+Task: chunk-implementer
+
+chunk: 1B
+feature: <feature-id>
+plan_excerpt: [Chunk 1B section from PLAN.md]
+files: [List of files for this chunk]
+ship_criteria: [Definition of done]
+```
+
+**c. Validate returned work:**
+- Read the validation report from chunk-implementer
+- If FAIL: STOP, show issues to user, ask: Fix? Skip? Abort?
+- If PASS: continue
+
+**d. Update MEMORY.md:**
+```markdown
+| 1B | complete | [summary] |
+```
+Add to session log with validation evidence.
+
+**e. Write .chunk-complete marker:**
+```bash
+cat > .claude/.chunk-complete << 'EOF'
+{
+  "chunk": "1B",
+  "feature": "<feature-id>",
+  "phase": 1,
+  "description": "[chunk scope]",
+  "timestamp": "<ISO timestamp>"
+}
+EOF
+```
+
+**f. Mark completed in TodoWrite:**
+```json
+{"id": "1b", "content": "Chunk 1B: [scope]", "status": "completed"}
+```
+
+#### 5.4: Phase Gates
+
+**After completing all chunks in a phase, STOP:**
+
+```
+Phase [N] Complete
+
+Ship Criteria:
+- [x] Criteria 1 - [evidence]
+
+Manual Testing Required:
+- [ ] Test item 1
+- [ ] Test item 2
+
+Say "continue" when ready for next phase.
+```
+
+Wait for user confirmation before starting next phase.
+
+**Resume:** Re-running the command reads MEMORY.md and skips completed chunks.
 
 ### Stage 6: Review Loop (unless --skip-review)
 
@@ -125,7 +199,7 @@ Agent handles internally:
 1. Run applicable reviewers
 2. If issues found → STOP, show issues to user
 3. User decides: **fix** / **skip issue** / **abort**
-4. If fix: resume `feature-implementer` with feedback
+4. If fix: spawn `chunk-implementer` with fix task
 5. Re-run failed reviewers
 6. Repeat until clean or user says proceed
 
@@ -150,7 +224,7 @@ Update graph status:
 
 ## Resume
 
-Re-run command to resume. The `feature-implementer` reads MEMORY.md and continues from last completed chunk.
+Re-run command to resume. Stage 5 reads MEMORY.md and skips completed chunks, continuing from where it left off.
 
 ## Hooks (Optional)
 
