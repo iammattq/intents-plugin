@@ -146,20 +146,7 @@ ship_criteria: [Definition of done]
 ```
 Add to session log with validation evidence.
 
-**e. Write .chunk-complete marker:**
-```bash
-cat > .claude/.chunk-complete << 'EOF'
-{
-  "chunk": "1B",
-  "feature": "<feature-id>",
-  "phase": 1,
-  "description": "[chunk scope]",
-  "timestamp": "<ISO timestamp>"
-}
-EOF
-```
-
-**f. Mark completed in TodoWrite:**
+**e. Mark completed in TodoWrite:**
 ```json
 {"id": "1b", "content": "Chunk 1B: [scope]", "status": "completed"}
 ```
@@ -225,10 +212,6 @@ Update graph status:
 ## Resume
 
 Re-run command to resume. Stage 5 reads MEMORY.md and skips completed chunks, continuing from where it left off.
-
-## Hooks (Optional)
-
-Quality gates can run automatically via hooks. See [docs/hook-setup.md](../docs/hook-setup.md) for configuration.
 
 ## Completion
 

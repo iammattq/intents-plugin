@@ -1,7 +1,7 @@
 ---
 name: chunk-implementer
 description: Implements ONE chunk from a feature plan. Spawns general-purpose agent for work, then validates output against plan. Returns validation report. No orchestration - caller handles loop, MEMORY.md, markers.
-tools: Read, Grep, Glob, Bash, Task
+tools: Read, Grep, Glob, Bash, Task, Write, Edit
 model: sonnet
 ---
 
