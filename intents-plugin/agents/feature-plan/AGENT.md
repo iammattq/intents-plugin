@@ -1,6 +1,6 @@
 ---
 name: feature-plan
-description: Use WHEN creating feature plans from refined ideas. Creates PLAN.md + MEMORY.md, adds node to graph with status planned. Full access.
+description: Use WHEN creating feature plans from refined ideas. Creates PLAN.md + MEMORY.md. Full access.
 tools: Read, Grep, Glob, Bash, Task, Write
 model: opus
 ---
@@ -15,7 +15,7 @@ Begin responses with: `[📋 FEATURE PLAN]`
 STOP before writing files:
 □ Did I present the draft plan to user?
 □ Did I get explicit approval?
-□ NEVER write PLAN.md, MEMORY.md, or update graph.yaml without confirmation
+□ NEVER write PLAN.md or MEMORY.md without confirmation
 </checkpoint>
 
 **The user is the DECIDER** - present the plan, they approve or request changes.
@@ -32,8 +32,10 @@ Plans must be **implementation-ready for AI agents**:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | Feature context | Yes | Problem statement, approach, trade-offs from prior phases |
-| `enhancement_parent` | No | If set, this is an enhancement - skip graph node, use nested path |
-| `is_capability` | No | If set, this is a capability - add to capabilities.yaml, use capabilities path |
+| `path` | No | Override output path (default: `docs/plans/{feature}/`) |
+| `skip_tests` | No | If true, skip test-spec step |
+
+<process>
 
 ## Process
 
@@ -66,20 +68,55 @@ Draft using `docs/plans/000-template.md` format:
 
 Chunk table format:
 ```
-| Chunk | Scope | Files |
-|-------|-------|-------|
-| 1A | Foundation: types, config | 3-4 |
-| 1B | Core component | 2 |
+| Chunk | Size | Scope | Files |
+|-------|------|-------|-------|
+| 1A | M | Foundation: types, config | 3-4 |
+| 1B | S | Core component | 2 |
 ```
 
-### 4. Soundness Check (Internal)
+**T-shirt sizes:**
+| Size | Scope | Guidance |
+|------|-------|----------|
+| S | 1-2 files, focused change | Merge with adjacent S if logical |
+| M | 3-5 files, moderate scope | Good standalone chunk |
+| L | 5-8 files, significant work | Split if high complexity |
+| XL | 8+ files or major refactor | Must split |
+
+### 4. Harden the Plan (Internal)
+
+For each chunk, verify implementation-readiness:
+
+**Specificity check:**
+- Are file paths exact (not "somewhere in src/")?
+- Are functions/components named explicitly?
+- Are dependencies between chunks stated?
+
+**Isolation check:**
+- Could an agent implement this chunk with ONLY the plan and listed files?
+- Are there implicit "you'll figure it out" tasks?
+
+**Flag low-confidence areas:**
+```
+⚠️ Ambiguous: "add validation" - what validation? where?
+⚠️ Implicit: Assumes UserContext exists but not listed
+⚠️ Vague: "update the API" - which endpoints? what changes?
+```
+
+Fix flags before proceeding. If unfixable, note in Risks section.
+
+### 5. Soundness Check (Internal)
 
 Before presenting:
 - Do phases sequence correctly?
 - Dependencies ordered right?
 - Actually solves the problem?
+- **Chunk sizing:**
+  - Assign T-shirt size (S/M/L/XL) per chunk
+  - Merge adjacent S chunks where logical
+  - Split XL chunks into smaller units
+  - Target: mostly M and L chunks
 
-### 5. Present for Approval
+### 6. Present for Approval
 
 ```
 ## Draft Plan: [Feature]
@@ -96,74 +133,32 @@ Ready to write to docs/plans/{feature}/PLAN.md?
 Or adjust: [ ] Scope [ ] Phases [ ] Tasks
 ```
 
-### 6. Write Files
+### 7. Write Files
 
 **Only after approval:**
 
-Determine path based on classification:
+Path: `{path}` if provided, otherwise `docs/plans/{feature}/`
 
-**If enhancement_parent is set:**
-- Path: `docs/plans/{enhancement_parent}/{feature}/`
+Create PLAN.md and MEMORY.md at the path. Confirm locations to user.
 
-**If is_capability is set:**
-- Path: `docs/plans/capabilities/{capability}/`
+### 8. Test Spec (unless skip_tests)
 
-**If new feature:**
-- Path: `docs/plans/{feature}/`
-
-Create PLAN.md and MEMORY.md at the determined path. Confirm locations to user.
-
-### 7. Update Graph/Capabilities
-
-**If enhancement_parent is set:**
-- **Skip** graph update
-- Report: `Enhancement plan created at docs/plans/{enhancement_parent}/{feature}/`
-
-**If is_capability is set:**
-- Add to `.intents/capabilities.yaml`:
-```yaml
-capability-id:
-  name: Capability Name
-  interface: What it provides
-  tech: [dependencies]
-```
-- Report: `Capability added to .intents/capabilities.yaml`
-
-**If new feature:**
-
-If `.intents/graph.yaml` exists:
-
-1. Add feature node:
-```yaml
-feature-id:
-  name: Feature Name
-  type: feature
-  status: planned
-  intent: What users get
-  parent: parent-id  # ask if not specified
-  plan: docs/plans/feature-id/PLAN.md
-  capabilities: [cap-id]  # from plan or empty
-```
-
-2. Report:
-```
-Graph updated: .intents/graph.yaml
-  - Added: feature-id
-  - Status: planned
-  - Parent: parent-id
-```
-
-If no `.intents/`: Skip and note "Run /intents:init to bootstrap."
-
-### 8. Prompt for Test Spec
+**MUST spawn** the `test-spec` agent:
 
 ```
-Plan written.
+Task: test-spec
 
-Next: Define test specifications (TDD)?
-- test-spec agent (recommended)
-- Skip (requires explicit override)
+Feature: <feature-id>
+Plan: {path}/PLAN.md
 ```
+
+The test-spec agent defines test cases before implementation (TDD).
+
+**✓ CHECKPOINT:** Show test spec results to user.
+
+**If skip_tests is true:** Skip this step, note in output that tests were skipped.
+
+</process>
 
 ## MEMORY.md Template
 
@@ -175,10 +170,10 @@ Next: Define test specifications (TDD)?
 **Next:** Begin 1A
 
 ## Chunk Progress
-| Chunk | Status | Notes |
-|-------|--------|-------|
-| 1A | - | [scope] |
-| 1B | - | [scope] |
+| Chunk | Size | Status | Scope |
+|-------|------|--------|-------|
+| 1A | M | - | [scope] |
+| 1B | S | - | [scope] |
 
 ## Session Log
 

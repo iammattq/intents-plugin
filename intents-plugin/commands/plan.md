@@ -1,6 +1,6 @@
 ---
 description: Create a feature plan with research workflow. Use when planning new features.
-argument-hint: <description> [--parent feature] [--enhance parent] [--skip-brainstorm] [--skip-research]
+argument-hint: <description> [--parent feature] [--enhance parent] [--skip-brainstorm] [--skip-research] [--skip-tests]
 ---
 
 # /intents:plan
@@ -14,7 +14,7 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 /intents:plan <description> --parent <parent-feature>
 /intents:plan <description> --enhance <parent-feature>
 /intents:plan <description> --skip-brainstorm
-/intents:plan <description> --skip-research
+/intents:plan <description> --skip-tests
 ```
 
 ## Prerequisites
@@ -121,18 +121,50 @@ Wait for user approval before planning.
 
 Spawn `feature-plan` agent with all context:
 
-**If enhancement (enhancement_parent is set):**
-- Pass `enhancement_parent` to the agent
-- Creates `docs/plans/<enhancement_parent>/<feature>/PLAN.md`
-- Creates `docs/plans/<enhancement_parent>/<feature>/MEMORY.md`
-- **Skip** adding node to graph.yaml
+**If enhancement:**
+- Pass `path: docs/plans/<enhancement_parent>/<feature>/`
+
+**If capability:**
+- Pass `path: docs/plans/capabilities/<capability>/`
 
 **If new feature:**
-- Creates `docs/plans/<feature>/PLAN.md`
-- Creates `docs/plans/<feature>/MEMORY.md`
-- Adds node to `.intents/graph.yaml` with `status: planned`
+- Pass `path: docs/plans/<feature>/`
 
-The agent will present draft plan for user approval before writing files.
+**If --skip-tests:**
+- Pass `skip_tests: true`
+
+The agent will:
+1. Present draft plan for user approval
+2. Write PLAN.md and MEMORY.md
+3. Spawn test-spec agent (unless skip_tests)
+
+### Phase 6: Graph Update (command handles this)
+
+**After agent completes successfully:**
+
+**If enhancement:**
+- Skip graph update (enhancement plans don't get graph nodes)
+
+**If capability:**
+- Add to `.intents/capabilities.yaml`:
+```yaml
+capability-id:
+  name: Capability Name
+  interface: What it provides
+  tech: [dependencies]
+```
+
+**If new feature:**
+- Add node to `.intents/graph.yaml`:
+```yaml
+feature-id:
+  name: Feature Name
+  type: feature
+  status: planned
+  intent: What users get
+  parent: parent-id
+  plan: docs/plans/feature-id/PLAN.md
+```
 
 ## Completion
 
@@ -172,3 +204,4 @@ Next: /intents:implement <feature-id>
 | `--enhance <parent>` | Create enhancement plan under parent (skip classification, no graph node) |
 | `--skip-brainstorm` | Idea already clear, skip ideation |
 | `--skip-research` | Context known, skip codebase/technical research |
+| `--skip-tests` | Skip test-spec step (pass to feature-plan agent) |

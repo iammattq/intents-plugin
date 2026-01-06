@@ -4,7 +4,7 @@ A plugin that teaches Claude Code the R-P-I (Research-Plan-Implement) workflow w
 
 ## The Problem
 
-Claude Code works brilliantly in the "smart zone" (roughly the first 40% of context), but performance degrades on large features. The R-P-I workflow with `.intents/` graph solves this by:
+Claude Code works brilliantly in the "smart zone" (roughly the first 40% of context), but performance degrades on large features. The R-P-I inspired workflow with `.intents/` graph solves this by:
 
 1. **Externalizing architecture** - The graph captures what the system IS
 2. **Chunked implementation** - Plans break work into context-sized pieces
