@@ -1,16 +1,17 @@
 # Intents Plugin for Claude Code
 
-A plugin that teaches Claude Code the R-P-I (Research-Plan-Implement) workflow with graph-based architecture tracking via `.intents/`.
+A plugin that keeps Claude Code agents in the context "smart zone" through chunked planning, sub-agent orchestration, and shared memory.
+
+Inspired by [Dex Horthy's R-P-I workflow](https://www.youtube.com/watch?v=rmvDxxNubIg).
 
 ## The Problem
 
-Claude Code works brilliantly in the "smart zone" (roughly the first 40% of context), but performance degrades on large features. The R-P-I inspired workflow with `.intents/` graph solves this by:
+Claude Code works brilliantly in the "smart zone" (roughly the first 40% of context), but performance degrades on large features. This plugin solves it by:
 
-1. **Externalizing architecture** - The graph captures what the system IS
+1. **Externalizing architecture** - The `.intents/` graph captures what the system IS
 2. **Chunked implementation** - Plans break work into context-sized pieces
-3. **Status tracking** - Progress persists across sessions via MEMORY.md and graph status
-
-This plugin automates the orchestration that was previously manual.
+3. **Sub-agent orchestration** - Research, reviews, and implementation run in isolated contexts
+4. **Shared memory** - `MEMORY.md` tracks progress across sub-agents and sessions
 
 ## Installation
 

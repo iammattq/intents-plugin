@@ -1,21 +1,21 @@
 # Intents Plugin for Claude Code
 
-A Claude Code plugin that teaches Claude the R-P-I (Research-Plan-Implement) workflow with graph-based architecture tracking.
+A Claude Code plugin that keeps agents in the context "smart zone" through chunked planning, sub-agent orchestration, and shared memory.
+
+Inspired by [Dex Horthy's R-P-I workflow](https://www.youtube.com/watch?v=rmvDxxNubIg) and research on context window limitations.
 
 ## What is this?
 
-Large features break Claude. The context window fills up, performance degrades, and you end up with inconsistent implementations. The **R-P-I workflow** solves this by:
+Large features break Claude. The context window fills up, performance degrades, and you end up with inconsistent implementations. This plugin solves it by:
 
-1. **Research** - Understand the problem space before committing
-2. **Plan** - Break work into context-sized chunks with clear ship criteria
-3. **Implement** - Execute chunk by chunk, maintaining progress in MEMORY.md
+1. **Chunked planning** - Break work into context-sized pieces with clear ship criteria
+2. **Sub-agent orchestration** - Offload research, reviews, and implementation to isolated contexts
+3. **Shared memory** - `MEMORY.md` tracks progress across sub-agents and sessions
 
 The `.intents/` folder captures your architecture as a graph:
 - **Features** with status (planned, in-progress, implemented)
 - **Capabilities** that features consume (auth, storage, media)
 - **Inheritance** so children get parent capabilities automatically
-
-This plugin automates the workflow that was previously manual orchestration.
 
 ## Installation
 
@@ -75,29 +75,24 @@ The implementation plan and session logs are in:
 
 ## Background & Credits
 
-The R-P-I workflow is informed by research on context window limitations and agent orchestration:
+This plugin is my experiment building a "harness" for AI coding agents, informed by:
+
+**Dex Horthy's R-P-I Workflow (HumanLayer)** - The primary inspiration
+- The "Dumb Zone": Performance degrades after ~40% context usage
+- R-P-I pattern: Research → Plan → Implement in separate contexts
+- Sub-agents as context isolation with compressed summaries
+- Source: [No Vibes Allowed: Solving Hard Problems in Complex Codebases](https://www.youtube.com/watch?v=rmvDxxNubIg)
+- Repo: [Advanced Context Engineering for Coding Agents](https://github.com/humanlayer/advanced-context-engineering-for-coding-agents)
 
 **Anthropic's Harness Research**
-- Problem: Agents fail via over-ambition (run out of context) or premature victory (declare done too early)
-- Solution: Initializer agent + coding agent pattern with progress tracking
+- Agents fail via over-ambition (run out of context) or premature victory (declare done too early)
+- Initializer agent + coding agent pattern with progress tracking
 - Source: [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
-
-**Dex Horthy's Context Engineering (HumanLayer)**
-- The "Dumb Zone": Performance degrades after ~40% context usage
-- R-P-I Workflow: Research → Plan → Implement in separate contexts
-- Sub-agents as context isolation with compressed summaries
-- Source: [Advanced Context Engineering for Coding Agents](https://github.com/humanlayer/advanced-context-engineering-for-coding-agents)
 
 **Research on Context Limitations**
 - Models degrade well before advertised limits (~130k effective for 200k windows)
 - Working memory: LLMs track 5-10 variables before degrading to random guessing
-- Problem is reasoning, not retrieval—needle tests pass but complex reasoning fails
 - Sources: [Context Rot (Chroma)](https://research.trychroma.com/context-rot), [Long Context Reasoning](https://nrehiew.github.io/blog/long_context/)
-
-**Key Insight**
-> "The more you use the context window, the worse outcomes you'll get."
-
-This plugin automates the orchestration patterns that keep Claude in the "smart zone."
 
 ## License
 
