@@ -130,38 +130,6 @@ Verify: All tasks pass validation → proceed.
 
 Verify: MEMORY.md updated → proceed.
 
-## Step 6.5: Write Chunk Complete Marker
-
-**Write marker file for hook automation:**
-
-```bash
-mkdir -p .claude
-cat > .claude/.chunk-complete << 'EOF'
-{
-  "chunk": "<chunk-id>",
-  "feature": "<feature-id>",
-  "phase": <phase-number>,
-  "description": "<chunk description from PLAN.md>",
-  "timestamp": "<ISO 8601 timestamp>"
-}
-EOF
-```
-
-Example:
-```json
-{
-  "chunk": "1A",
-  "feature": "user-settings",
-  "phase": 1,
-  "description": "Hook infrastructure and utilities",
-  "timestamp": "2025-12-29T10:30:00Z"
-}
-```
-
-**Purpose:** The SubagentStop hook detects this marker, runs validation, auto-commits on pass, and updates MEMORY.md status deterministically.
-
-Verify: Marker file written → proceed.
-
 ## Step 7: Continue or Pause
 
 <checkpoint>

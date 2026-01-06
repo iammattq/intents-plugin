@@ -54,15 +54,7 @@ This analyzes your codebase and generates the `.intents/` folder with:
 - `entities.yaml` - Domain models
 - `tech.yaml` - Technology dependencies
 
-### 2. Check the graph
-
-```
-/intents:status
-```
-
-See the feature tree, status of each feature, and any sync warnings.
-
-### 3. Plan a new feature
+### 2. Plan a new feature
 
 ```
 /intents:plan user-preferences --parent admin
@@ -83,7 +75,7 @@ This runs the full R-P workflow:
 ```
 This skips classification and creates the plan at `docs/plans/admin-galleries/sorting/` without a graph node.
 
-### 4. Implement the feature
+### 3. Implement the feature
 
 ```
 /intents:implement user-preferences
@@ -106,8 +98,6 @@ This orchestrates implementation:
 | Command | Description |
 |---------|-------------|
 | `/intents:init` | Bootstrap `.intents/` from existing codebase |
-| `/intents:status` | Show feature tree with status |
-| `/intents:status <feature>` | Show detail for specific feature (includes enhancements) |
 | `/intents:plan <feature>` | Run R-P workflow, create plan + graph node |
 | `/intents:implement <feature>` | Implement with status tracking |
 | `/intents:implement <parent>/<enhancement>` | Implement an enhancement plan |
@@ -129,24 +119,22 @@ This orchestrates implementation:
 ## Workflow Overview
 
 ```
-                    +------------------+
-                    |  /intents:init   |
-                    |  (Bootstrap)     |
-                    +--------+---------+
-                             |
-                             v
-                    +------------------+
-                    | .intents/ folder |
-                    | graph.yaml       |
-                    +--------+---------+
-                             |
-              +--------------+--------------+
-              |                             |
-              v                             v
-     +------------------+          +------------------+
-     | /intents:plan    |          | /intents:status  |
-     | (Research-Plan)  |          | (Query)          |
-     +--------+---------+          +------------------+
+     +------------------+
+     |  /intents:init   |
+     |  (Bootstrap)     |
+     +--------+---------+
+              |
+              v
+     +------------------+
+     | .intents/ folder |
+     | graph.yaml       |
+     +--------+---------+
+              |
+              v
+     +------------------+
+     | /intents:plan    |
+     | (Research-Plan)  |
+     +--------+---------+
               |
               | Creates PLAN.md
               | Adds graph node
@@ -336,16 +324,6 @@ in-progress - Currently being implemented
            in-progress
 ```
 
-## Hooks (Optional)
-
-For automatic quality gates during implementation, see **[docs/hook-setup.md](docs/hook-setup.md)**.
-
-Hooks provide:
-- Auto-run tests after each chunk
-- Plan verification against ship criteria
-- Auto-commit on success
-- Graph status updates on feature completion
-
 ## Directory Structure
 
 ```
@@ -373,7 +351,6 @@ intents-plugin/
 
   commands/
     init.md
-    status.md
     plan.md
     implement.md
 
@@ -430,7 +407,7 @@ Think of the graph as a **subway map** - it shows major destinations, not every 
 | "Dark mode toggle" | Enhancement (usually) | Adds to settings/UI |
 | "Payment system" | New feature | New domain area |
 
-Enhancement plans live at `docs/plans/<parent>/<enhancement>/` and don't clutter the graph. Use `/intents:status <feature>` to see enhancements for a specific feature.
+Enhancement plans live at `docs/plans/<parent>/<enhancement>/` and don't clutter the graph.
 
 ## Troubleshooting
 
@@ -446,9 +423,8 @@ Either:
 
 ### Graph out of sync
 
-Use `/intents:status` to check for warnings, then:
-1. Update status values manually in `graph.yaml`
-2. Or run `/intents:init` to regenerate (will overwrite)
+1. Update values manually in `graph.yaml`
+2. Or run `/intents:init --force` to regenerate from codebase
 
 ### Implementation stuck
 

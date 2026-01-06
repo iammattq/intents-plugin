@@ -20,7 +20,6 @@ Check before proceeding:
 
 1. **No existing .intents/** (unless `--force` in $ARGUMENTS):
    - If `.intents/` exists and no `--force`: Stop and inform user:
-     - View current: `/intents:status`
      - Overwrite: `/intents:init --force`
      - Delete manually and re-run
 
@@ -45,5 +44,5 @@ The agent will:
 
 ## After Success
 
-- `/intents:status` - View the feature tree
+- Review `.intents/graph.yaml` to see the feature tree
 - `/intents:plan [feature]` - Plan new features
