@@ -72,6 +72,13 @@ Pressure-tests from relevant perspectives:
 - Is this reversible if we learn something new?
 - Is this correct and complete?
 
+**YAGNI Lens**
+
+- Are we building for a hypothetical future?
+- What's the cost of not having this?
+- Can we ship without it and add later if needed?
+- Is this solving a real problem or a maybe-problem?
+
 **Critical Rule:** Each round must advance toward resolution. Not "here's another problem" but "here's a concern AND here's how we might resolve it."
 
 ### Phase 3: Synthesis (Hats Off)
