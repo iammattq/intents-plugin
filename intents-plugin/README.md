@@ -8,10 +8,9 @@ Inspired by [Dex Horthy's R-P-I workflow](https://www.youtube.com/watch?v=rmvDxx
 
 Claude Code works brilliantly in the "smart zone" (roughly the first 40% of context), but performance degrades on large features. This plugin solves it by:
 
-1. **Externalizing architecture** - The `.intents/` graph captures what the system IS
-2. **Chunked implementation** - Plans break work into context-sized pieces
-3. **Sub-agent orchestration** - Research, reviews, and implementation run in isolated contexts
-4. **Shared memory** - `MEMORY.md` tracks progress across sub-agents and sessions
+1. **Chunked implementation** - Plans break work into context-sized pieces
+2. **Sub-agent orchestration** - Research, reviews, and implementation run in isolated contexts
+3. **Shared memory** - `MEMORY.md` tracks progress across sub-agents and sessions
 
 ## Installation
 
@@ -24,7 +23,7 @@ cd /path/to/your/project
 claude --plugin-dir /path/to/intents-plugin/intents-plugin
 ```
 
-Commands are namespaced: `/intents:init`, `/intents:plan`, `/intents:implement`, etc.
+Commands are namespaced: `/intents:plan`, `/intents:implement`, etc.
 
 ### Option 2: Standalone Mode
 
@@ -37,247 +36,114 @@ ln -s /path/to/intents-plugin/intents-plugin/agents /path/to/your/project/.claud
 ln -s /path/to/intents-plugin/intents-plugin/skills /path/to/your/project/.claude/skills
 ```
 
-Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
+Commands are unprefixed: `/plan`, `/implement`, etc.
 
 **Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
 ## Quick Start
 
-### 1. Bootstrap your project
+### 1. Plan a feature
 
 ```
-/intents:init
-```
-
-This analyzes your codebase and generates the `.intents/` folder with:
-- `graph.yaml` - Feature tree with status
-- `capabilities.yaml` - Reusable interfaces (auth, storage, etc.)
-- `entities.yaml` - Domain models
-- `tech.yaml` - Technology dependencies
-
-### 2. Plan a new feature
-
-```
-/intents:plan user-preferences --parent admin
+/intents:plan user-preferences
 ```
 
 This runs the full R-P workflow:
-- Brainstorm approaches
-- **Classify as new feature or enhancement** (you confirm)
-- Research codebase for fit
-- Research external tech if needed
-- Refine via advocate/critic debate
-- Create PLAN.md with chunked phases
-- Add feature node to graph (new features only)
+- **Brainstorm** - Conversational loop to pull detail out and challenge vagueness
+- **Research** - Explore codebase for patterns and fit
+- **Refine** - Advocate/critic debate with YAGNI lens
+- **Plan** - Create PLAN.md with chunks and dependency graph
 
-**Enhancement shortcut:** If you already know this enhances an existing feature:
+**Skip options:**
 ```
-/intents:plan sorting --enhance admin-galleries
+/intents:plan sorting --skip-brainstorm   # Idea already clear
+/intents:plan sorting --skip-research     # Context known
 ```
-This skips classification and creates the plan at `docs/plans/admin-galleries/sorting/` without a graph node.
 
-### 3. Implement the feature
+### 2. Implement the feature
 
 ```
 /intents:implement user-preferences
 ```
 
-For enhancements, use the path format:
-```
-/intents:implement admin-galleries/sorting
-```
+**You become the orchestrator.** The command:
+- Reads the kanban in MEMORY.md (Ready/Blocked/Done)
+- Spawns `chunk-worker` agents for Ready chunks
+- Workers implement → validate → update kanban → commit
+- Pauses at phase gates for manual testing
 
-This orchestrates implementation:
-- Generate test specs (TDD)
-- Implement chunk by chunk
-- Pause at phase gates for manual testing
-- Run code review, security audit, accessibility check
-- Update graph status when complete
+**Parallel execution:** Spawn multiple chunk-workers for independent Ready chunks.
+
+**Options:**
+```
+/intents:implement sorting --use-purple   # Purple team A/B iteration
+/intents:implement sorting --skip-review  # Skip code review stage
+```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/intents:init` | Bootstrap `.intents/` from existing codebase |
-| `/intents:plan <feature>` | Run R-P workflow, create plan + graph node |
-| `/intents:implement <feature>` | Implement with status tracking |
-| `/intents:implement <parent>/<enhancement>` | Implement an enhancement plan |
+| `/intents:plan <feature>` | Run R-P workflow, create plan |
+| `/intents:implement <feature>` | Implement with chunk tracking |
 
 ### Command Options
 
 **`/intents:plan`**
-- `--parent <feature>` - Specify parent for inheritance
-- `--enhance <parent>` - Create as enhancement (no graph node, nested path)
 - `--skip-brainstorm` - Skip ideation (idea already clear)
 - `--skip-research` - Skip codebase/tech research
+- `--skip-tests` - Skip test-spec step
 
 **`/intents:implement`**
-- `--skip-tests` - Skip test-spec generation
 - `--skip-review` - Skip code review
-- `--skip-security` - Skip security audit
-- `--skip-a11y` - Skip accessibility review
+- `--use-purple` - Use purple team workflow (Team A implements, Team B validates)
 
 ## Workflow Overview
 
 ```
-     +------------------+
-     |  /intents:init   |
-     |  (Bootstrap)     |
-     +--------+---------+
-              |
-              v
-     +------------------+
-     | .intents/ folder |
-     | graph.yaml       |
-     +--------+---------+
-              |
-              v
      +------------------+
      | /intents:plan    |
      | (Research-Plan)  |
      +--------+---------+
               |
               | Creates PLAN.md
-              | Adds graph node
               v
      +------------------+
      |/intents:implement|
      | (Implementation) |
      +--------+---------+
               |
-              | Updates status:
-              | planned -> in-progress -> implemented
+              | Chunk by chunk
+              | with validation
               v
      +------------------+
      | Feature Complete |
      +------------------+
 ```
 
-## Graph Schema
-
-The `.intents/` folder contains four YAML files that form the architectural graph:
-
-### graph.yaml - Feature Tree
-
-```yaml
-root:
-  name: My Project
-  type: feature
-  status: implemented
-  intent: What this project does for users
-  capabilities:
-    - persistence:read
-
-features:
-  admin:
-    name: Admin Dashboard
-    type: feature
-    status: implemented
-    intent: Manage content and settings
-    parent: root
-    capabilities:
-      - session-auth
-      - persistence:read-write
-
-  admin-galleries:
-    name: Gallery Management
-    type: feature
-    status: implemented
-    intent: Create and organize photo galleries
-    parent: admin
-    capabilities:
-      - images:manage
-      - upload
-```
-
-**Key concepts:**
-- **Status**: `new` | `planned` | `in-progress` | `implemented` | `broken`
-- **Inheritance**: Children inherit parent capabilities (admin-galleries inherits session-auth from admin)
-- **Capability modes**: `capability:mode` syntax (e.g., `images:consume` vs `images:manage`)
-
-### capabilities.yaml - Reusable Interfaces
-
-```yaml
-session-auth:
-  name: Session Authentication
-  type: capability
-  category: auth
-  intent: Protect routes requiring login
-  tech:
-    - next-auth
-  interface: |
-    useSession() - client auth state
-    getServerSession() - server auth check
-
-images:
-  name: Image Processing
-  type: capability
-  category: media
-  intent: Upload, process, serve images
-  tech:
-    - s3
-    - sharp
-  modes:
-    consume: Display images (read-only)
-    manage: Upload, delete, reorder (write)
-```
-
-### entities.yaml - Domain Models
-
-```yaml
-Gallery:
-  name: Gallery
-  type: entity
-  capabilities:
-    - images:manage
-  state:
-    - published: boolean
-    - images: Image[]
-```
-
-### tech.yaml - Technology Dependencies
-
-```yaml
-s3:
-  name: AWS S3
-  type: tech
-  category: cloud
-  config: src/lib/s3.ts
-  purpose: Object storage for images
-
-next-auth:
-  name: NextAuth.js
-  type: tech
-  category: auth
-  config: src/app/api/auth/[...nextauth]/route.ts
-  docs: docs/guides/auth.md
-```
-
 ## Agents Included
-
-This plugin includes 12 agents for the complete R-P-I workflow:
 
 | Agent | Phase | Purpose |
 |-------|-------|---------|
-| `codebase-analyzer` | Bootstrap | Analyze codebase, generate initial graph |
 | `codebase-researcher` | Research | Explore internal codebase for context |
 | `technical-researcher` | Research | Research external docs and APIs |
-| `feature-refine` | Research | Advocate/critic debate to refine approach |
-| `feature-plan` | Plan | Create PLAN.md, add graph node |
-| `test-spec` | Plan/Implement | Generate TDD test specifications |
-| `feature-implementer` | Implement | Orchestrate chunk-by-chunk implementation |
-| `code-reviewer` | Implement | Validate code quality and patterns |
-| `security-auditor` | Implement | OWASP security review |
-| `accessibility-reviewer` | Implement | WCAG compliance check |
-| `performance-reviewer` | Implement | Performance issue detection |
-| `doc-reviewer` | Implement | Documentation accuracy review |
+| `feature-refine` | Research | Advocate/critic debate with YAGNI lens |
+| `feature-plan` | Plan | Create PLAN.md with dependency graph |
+| `test-spec` | Plan | Generate TDD test specifications |
+| `chunk-worker` | Implement | Stateless worker: implement → validate → update kanban → commit |
+| `purple-team-a` | Implement | Write code (purple team workflow) |
+| `purple-team-b` | Implement | Validate and fix gaps (purple team workflow) |
+| `code-reviewer` | Review | Validate code quality and patterns |
+| `security-auditor` | Review | OWASP security review |
+| `accessibility-reviewer` | Review | WCAG compliance check |
+| `performance-reviewer` | Review | Performance issue detection |
+| `doc-reviewer` | Review | Documentation accuracy review |
 
 ## Skills Included
 
 | Skill | Purpose |
 |-------|---------|
-| `intents-system` | Teaches Claude the graph schema, when to read/write |
-| `feature-brainstorm` | Divergent ideation patterns for research phase |
+| `feature-brainstorm` | Conversational ideation loop - pulls detail, challenges vagueness |
 
 ## Plan Structure
 
@@ -285,45 +151,45 @@ When you run `/intents:plan`, it creates:
 
 ```
 docs/plans/<feature>/
-  PLAN.md    # Problem, goals, phases, chunks
-  MEMORY.md  # Session progress, decisions, blockers
+  PLAN.md    # Problem, goals, phases, chunks with dependencies
+  MEMORY.md  # Kanban board (Ready/Blocked/Done) + session logs
 ```
 
-Plans are chunked for context management:
+### PLAN.md - Chunks with Dependencies
 
 ```
 ## Phase 1: Foundation
-| Chunk | Scope | Files |
-|-------|-------|-------|
-| 1A | Types + config | 2 files |
-| 1B | Page route | 1 file |
-| 1C | Core component | 2 files |
-
-Ship Criteria:
-- Route accessible at /feature
-- Core UI renders
+| Chunk | Size | Depends | Scope | Files |
+|-------|------|---------|-------|-------|
+| 1A | M | - | Types + config | 3 |
+| 1B | S | - | Page route | 1 |
+| 1C | M | 1A | Core component | 2 |
+| 1D | S | 1A, 1B | Integration | 2 |
 ```
 
-Each phase ends with a **phase gate** for manual testing before continuing.
+- `-` means no dependencies (can start immediately)
+- Chunks with same/no dependencies can run **in parallel**
 
-## Status Flow
+### MEMORY.md - Kanban Board
 
+```markdown
+## Kanban
+
+### Ready
+- **1A** (M): Types + config
+- **1B** (S): Page route
+
+### Blocked
+- **1C** (M): Core component → needs 1A
+- **1D** (S): Integration → needs 1A, 1B
+
+### Done
+(none yet)
 ```
-new         - Feature identified but not analyzed
-     |
-     v (after /intents:plan)
-planned     - Has PLAN.md, ready for implementation
-     |
-     v (start of /intents:implement)
-in-progress - Currently being implemented
-     |
-     +--> implemented  (success)
-     |
-     +--> broken       (failure - tests or quality checks failed)
-           |
-           v (retry /intents:implement after fixing)
-           in-progress
-```
+
+Workers pick from Ready, move to Done, unblock dependents.
+
+Each phase ends with a **phase gate** for manual testing.
 
 ## Directory Structure
 
@@ -333,33 +199,27 @@ intents-plugin/
     plugin.json           # Plugin manifest
 
   agents/
-    accessibility-reviewer/AGENT.md
-    codebase-analyzer/AGENT.md
+    chunk-worker/AGENT.md        # Stateless chunk implementation
     codebase-researcher/AGENT.md
     code-reviewer/AGENT.md
     doc-reviewer/AGENT.md
-    feature-implementer/AGENT.md
     feature-plan/AGENT.md
     feature-refine/AGENT.md
     performance-reviewer/AGENT.md
+    purple-team-a/AGENT.md
+    purple-team-b/AGENT.md
     security-auditor/AGENT.md
     technical-researcher/AGENT.md
     test-spec/AGENT.md
+    accessibility-reviewer/AGENT.md
 
   skills/
-    intents-system/SKILL.md
     feature-brainstorm/SKILL.md
 
   commands/
-    init.md
     plan.md
     implement.md
-
-  templates/
-    graph.yaml
-    capabilities.yaml
-    entities.yaml
-    tech.yaml
+    ccpp.md
 
   README.md
 ```
@@ -369,9 +229,8 @@ intents-plugin/
 ### When to use this plugin
 
 - **Large features** that span multiple sessions
-- **Complex architecture** that benefits from explicit mapping
-- **Team projects** where the graph serves as documentation
-- **Refactoring** where you need to understand dependencies
+- **Complex implementations** that benefit from explicit planning
+- **Team projects** where plans serve as documentation
 
 ### When NOT to use it
 
@@ -381,51 +240,17 @@ intents-plugin/
 
 ### Tips
 
-1. **Review generated graph** - The analyzer makes educated guesses; correct any errors
-2. **Keep graph in sync** - Update manually if you make changes outside the workflow
-3. **Use phase gates** - Don't skip manual testing between phases
-4. **Trust the chunking** - Smaller chunks keep Claude in the smart zone
-
-### Node vs Enhancement
-
-Think of the graph as a **subway map** - it shows major destinations, not every street corner.
-
-**Create a graph node when:**
-- Building a new user-facing page or flow
-- Adding a distinct domain area
-- Work is described as "Build X" or "Work on X"
-
-**Use enhancement (`--enhance`) when:**
-- Adding functionality to an existing feature
-- Work is described as "Add X to Y" or "Improve Y"
-- The change is a "neighborhood improvement", not a new destination
-
-**Examples:**
-| Idea | Type | Why |
-|------|------|-----|
-| "User preferences page" | New feature | New destination |
-| "Add sorting to galleries" | Enhancement | Adds to existing feature |
-| "Dark mode toggle" | Enhancement (usually) | Adds to settings/UI |
-| "Payment system" | New feature | New domain area |
-
-Enhancement plans live at `docs/plans/<parent>/<enhancement>/` and don't clutter the graph.
+1. **Review generated plans** - The planner makes educated guesses; correct any errors
+2. **Use phase gates** - Don't skip manual testing between phases
+3. **Trust the chunking** - Smaller chunks keep Claude in the smart zone
 
 ## Troubleshooting
 
-### "No .intents/ folder found"
-
-Run `/intents:init` to bootstrap the graph.
-
-### Feature not found in graph
+### Feature not found
 
 Either:
 1. Run `/intents:plan <feature>` to create it
-2. Add manually to `.intents/graph.yaml`
-
-### Graph out of sync
-
-1. Update values manually in `graph.yaml`
-2. Or run `/intents:init --force` to regenerate from codebase
+2. Check `docs/plans/` for existing plans
 
 ### Implementation stuck
 
