@@ -12,11 +12,6 @@ Large features break Claude. The context window fills up, performance degrades, 
 2. **Sub-agent orchestration** - Offload research, reviews, and implementation to isolated contexts
 3. **Shared memory** - `MEMORY.md` tracks progress across sub-agents and sessions
 
-The `.intents/` folder captures your architecture as a graph:
-- **Features** with status (planned, in-progress, implemented)
-- **Capabilities** that features consume (auth, storage, media)
-- **Inheritance** so children get parent capabilities automatically
-
 ## Installation
 
 ### Option 1: Plugin Mode (Recommended)
@@ -28,7 +23,7 @@ cd /path/to/your/project
 claude --plugin-dir /path/to/intents-plugin/intents-plugin
 ```
 
-Commands are namespaced: `/intents:init`, `/intents:plan`, `/intents:implement`, etc.
+Commands are namespaced: `/intents:plan`, `/intents:implement`, etc.
 
 ### Option 2: Standalone Mode
 
@@ -41,20 +36,17 @@ ln -s /path/to/intents-plugin/intents-plugin/agents /path/to/your/project/.claud
 ln -s /path/to/intents-plugin/intents-plugin/skills /path/to/your/project/.claude/skills
 ```
 
-Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
+Commands are unprefixed: `/plan`, `/implement`, etc.
 
 **Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
 ## Quick Start
 
 ```bash
-# Bootstrap your project
-/intents:init
+# Plan a feature (brainstorm → research → refine → plan)
+/intents:plan user-settings
 
-# Plan a feature
-/intents:plan user-settings --parent admin
-
-# Implement it
+# Implement it (you orchestrate the kanban, workers do chunks)
 /intents:implement user-settings
 ```
 
@@ -62,9 +54,8 @@ Commands are unprefixed: `/init`, `/plan`, `/implement`, etc.
 
 See **[intents-plugin/README.md](intents-plugin/README.md)** for:
 - Complete command reference and options
-- Graph schema (all 4 YAML files)
 - Agent and skill details
-- Plan structure and chunking
+- Kanban-based chunking with dependency graphs
 - Best practices and troubleshooting
 
 ## Development

@@ -68,11 +68,18 @@ Draft using `docs/plans/000-template.md` format:
 
 Chunk table format:
 ```
-| Chunk | Size | Scope | Files |
-|-------|------|-------|-------|
-| 1A | M | Foundation: types, config | 3-4 |
-| 1B | S | Core component | 2 |
+| Chunk | Size | Depends | Scope | Files |
+|-------|------|---------|-------|-------|
+| 1A | M | - | Foundation: types, config | 3-4 |
+| 1B | S | - | Core component | 2 |
+| 1C | M | 1A | Feature using types | 3 |
+| 1D | S | 1A, 1B | Integration | 2 |
 ```
+
+**Depends column:**
+- `-` means no dependencies (can start immediately)
+- List chunk IDs that must complete first
+- Chunks with same/no dependencies can run in parallel
 
 **T-shirt sizes:**
 | Size | Scope | Guidance |
@@ -165,34 +172,50 @@ The test-spec agent defines test cases before implementation (TDD).
 ```markdown
 # [Feature] Implementation Progress
 
-## Current State
-**Chunk:** Not started
-**Next:** Begin 1A
+## Kanban
 
-## Chunk Progress
-| Chunk | Size | Status | Scope |
-|-------|------|--------|-------|
-| 1A | M | - | [scope] |
-| 1B | S | - | [scope] |
+### Ready
+Chunks with no dependencies or all dependencies satisfied. Pick any to implement.
+
+- **1A** (M): Foundation: types, config
+- **1B** (S): Core component
+
+### Blocked
+Waiting on dependencies.
+
+- **1C** (M): Feature using types → needs 1A
+- **1D** (S): Integration → needs 1A, 1B
+
+### Done
+Completed chunks.
+
+(none yet)
+
+---
 
 ## Session Log
 
-### Session 1
+### Session: [chunk]
 **Date:** YYYY-MM-DD
-**Chunk:** 1A
+**Status:** Complete | Partial | Blocked
 
 #### Completed
--
+- [task summaries]
+
+#### Files
+- path/to/file.ts - [what changed]
 
 #### Decisions
--
+- [any deviations or choices made]
 
-#### Blockers
--
-
-#### Next
--
+#### Blockers (if any)
+- [what's blocking, recommendation]
 ```
+
+**Kanban rules:**
+- Workers read Ready, pick a chunk, implement, move to Done
+- When chunk completes, check Blocked for chunks whose dependencies are now satisfied → move to Ready
+- Orchestrator (you or main session) spawns workers until Ready is empty
 
 ## Guidelines
 
