@@ -1,5 +1,7 @@
 # Intents Plugin for Claude Code
 
+**⚠️ Experimental** - This plugin is under active development. Expect breaking changes.
+
 A Claude Code plugin that keeps agents in the context "smart zone" through chunked planning, sub-agent orchestration, and shared memory.
 
 Inspired by [Dex Horthy's R-P-I workflow](https://www.youtube.com/watch?v=rmvDxxNubIg) and research on context window limitations.
