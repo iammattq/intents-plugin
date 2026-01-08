@@ -23,6 +23,14 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 - If `--parent` specified, parent must exist in graph
 - If feature already exists in graph, ask user how to proceed
 
+## Metrics Tracking
+
+When this command starts, the `UserPromptSubmit` hook automatically creates:
+`docs/plans/_drafts/<slug>/.tracking.json`
+
+This tracks elapsed time and token usage throughout the planning process.
+After classification, the tracking file moves to the feature's final location.
+
 ## Workflow
 
 **User is the DECIDER at each phase.** Present findings and wait for approval before proceeding.
@@ -79,6 +87,27 @@ After brainstorm, classify the work before proceeding:
 <checkpoint>
 STOP. Wait for user to confirm classification before proceeding.
 </checkpoint>
+
+**After classification confirmed**, migrate the tracking file:
+
+```bash
+# Determine the slug from the original description
+slug="<slugified-description>"
+
+# Move tracking to final location based on classification
+if [ -f "docs/plans/_drafts/${slug}/.tracking.json" ]; then
+  # For enhancement: docs/plans/<parent>/<feature>/
+  # For capability: docs/plans/capabilities/<capability>/
+  # For new feature: docs/plans/<feature>/
+
+  mkdir -p "docs/plans/<final-path>"
+  mv "docs/plans/_drafts/${slug}/.tracking.json" "docs/plans/<final-path>/.tracking.json"
+  rmdir "docs/plans/_drafts/${slug}" 2>/dev/null
+
+  # Update feature name in tracking file
+  # The Stop hook will pick up the new location automatically
+fi
+```
 
 ### Phase 2: Codebase Research (unless --skip-research)
 

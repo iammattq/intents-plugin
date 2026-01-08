@@ -15,6 +15,23 @@ Orchestrate implementation of a planned feature using kanban-based chunk workers
 /intents:implement <feature> --skip-review
 ```
 
+## Metrics Tracking
+
+When this command starts, the `UserPromptSubmit` hook automatically:
+1. Marks the plan phase as ended (if not already)
+2. Starts the implement phase timer
+
+The Stop hook displays cumulative metrics after each response:
+```
+⏱️  feature-name
+    Planning:     15m │ 52,103 in / 14,221 out
+    Implementing:  8m │ 31,847 in /  9,432 out
+    ────────────────────────────────────────────
+    Total: 83,950 in / 23,653 out
+```
+
+Tracking persists in `docs/plans/<feature>/.tracking.json`.
+
 ## Workflow
 
 <constraints>
