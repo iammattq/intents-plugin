@@ -105,6 +105,8 @@ def format_duration(start_iso: str, end_iso: str = None) -> str:
         hours = minutes // 60
         mins = minutes % 60
         return f"{hours}h {mins}m"
+    elif minutes < 1:
+        return "<1m"
     return f"{minutes}m"
 
 
