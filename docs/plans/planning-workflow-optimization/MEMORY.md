@@ -4,11 +4,10 @@
 
 ### Ready
 
-- **4** (M): Inline test-spec into feature-plan
+- **5** (M): Update plan.md orchestration
 
 ### Blocked
 
-- **5** (M): Update plan.md orchestration → needs 4
 - **6** (S): Add --fast flag → needs 5
 
 ### Done
@@ -16,6 +15,7 @@
 - **1** (S): Expand Phase 2 research scope ✓
 - **2** (M): Update feature-refine to accept research artifact ✓
 - **3** (M): Update feature-plan to accept research artifact ✓
+- **4** (M): Inline test-spec into feature-plan ✓
 
 ---
 
@@ -59,3 +59,19 @@
 
 #### Files
 - intents-plugin/agents/feature-plan/AGENT.md - Replaced codebase-researcher spawn with research artifact usage, updated input parameters table, updated guidelines
+
+### Session: Chunk 4
+**Date:** 2026-01-09
+**Status:** Complete
+
+#### Completed
+- Removed Step 8 that spawned test-spec agent
+- Added Step 6 "Test Specification (Inline)" with logic to analyze testable components, define unit tests, integration tests, and acceptance criteria
+- Added Test Specification section to plan output template in Step 7 (Coverage Summary, Tests by Chunk)
+- Merged test approval into single plan checkpoint (approve plan + tests together)
+- Removed `skip_tests` input parameter (no longer needed)
+- Updated DO guidelines to include "include inline test specs"
+- Updated DON'T guidelines to include "spawn test-spec"
+
+#### Files
+- intents-plugin/agents/feature-plan/AGENT.md - Inlined test specification logic, removed test-spec spawn, updated input parameters, updated guidelines
