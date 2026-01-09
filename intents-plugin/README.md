@@ -40,6 +40,41 @@ Commands are unprefixed: `/plan`, `/implement`, etc.
 
 **Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
+### Enabling Metrics Tracking (Optional)
+
+To see elapsed time and token usage during `/intents:plan` and `/intents:implement`, add hooks to your project's `.claude/settings.local.json`:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "command",
+        "command": "python3 /path/to/intents-plugin/intents-plugin/hooks/user_prompt_submit.py"
+      }]
+    }],
+    "Stop": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "command",
+        "command": "python3 /path/to/intents-plugin/intents-plugin/hooks/stop.py"
+      }]
+    }]
+  }
+}
+```
+
+Replace `/path/to/intents-plugin` with the actual path. After setup, you'll see metrics like:
+
+```
+⏱️  feature-name
+    Planning:     15m │ 52,103 in / 14,221 out
+    Implementing:  8m │ 31,847 in /  9,432 out
+    ────────────────────────────────────────────
+    Total: 83,950 in / 23,653 out
+```
+
 ## Quick Start
 
 ### 1. Plan a feature
@@ -197,6 +232,10 @@ Each phase ends with a **phase gate** for manual testing.
 intents-plugin/
   .claude-plugin/
     plugin.json           # Plugin manifest
+
+  hooks/
+    user_prompt_submit.py # Starts tracking on /plan or /implement
+    stop.py               # Updates tokens and displays metrics
 
   agents/
     chunk-worker/AGENT.md        # Stateless chunk implementation
