@@ -4,11 +4,11 @@
 
 ### Ready
 
-- **5** (M): Update plan.md orchestration
+- **6** (S): Add --fast flag
 
 ### Blocked
 
-- **6** (S): Add --fast flag → needs 5
+(none)
 
 ### Done
 
@@ -16,6 +16,7 @@
 - **2** (M): Update feature-refine to accept research artifact ✓
 - **3** (M): Update feature-plan to accept research artifact ✓
 - **4** (M): Inline test-spec into feature-plan ✓
+- **5** (M): Update plan.md orchestration ✓
 
 ---
 
@@ -75,3 +76,18 @@
 
 #### Files
 - intents-plugin/agents/feature-plan/AGENT.md - Inlined test specification logic, removed test-spec spawn, updated input parameters, updated guidelines
+
+### Session: Chunk 5
+**Date:** 2026-01-09
+**Status:** Complete
+
+#### Completed
+- Updated Phase 4 (Refinement) to explicitly pass research_artifact parameter to feature-refine agent
+- Updated Phase 5 (Planning) to explicitly pass research_artifact and refinement_summary to feature-plan agent
+- Removed test-spec spawn from Phase 5 (now inline in feature-plan)
+- Added checkpoint 3 (plan approval) to Phase 5 with test coverage summary
+- Removed --skip-tests option from argument-hint, Usage, and Options table
+- Updated completion output to reflect 3-checkpoint flow (brainstorm, refinement, plan)
+
+#### Files
+- intents-plugin/commands/plan.md - Updated Phase 4/5 with explicit artifact passing, removed test-spec references, added plan checkpoint, removed --skip-tests option

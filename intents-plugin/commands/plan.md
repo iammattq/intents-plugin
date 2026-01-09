@@ -1,6 +1,6 @@
 ---
 description: Create a feature plan with research workflow. Use when planning new features.
-argument-hint: <description> [--skip-brainstorm] [--skip-research] [--skip-tests]
+argument-hint: <description> [--skip-brainstorm] [--skip-research]
 ---
 
 # /intents:plan
@@ -13,7 +13,6 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 /intents:plan <feature-description>
 /intents:plan <description> --skip-brainstorm
 /intents:plan <description> --skip-research
-/intents:plan <description> --skip-tests
 ```
 
 ## Metrics Tracking
@@ -120,12 +119,12 @@ Spawn `technical-researcher` agent only if feature requires:
 
 ### Phase 4: Refinement
 
-Spawn `feature-refine` agent with full context from prior phases:
-- Include: problem statement, chosen direction, Phase 2/3 research findings
-- The agent will do its own targeted research to inform the debate
-- Two research perspectives may surface different considerations
+Spawn `feature-refine` agent with:
+- `problem_statement`: Validated problem from brainstorm
+- `chosen_direction`: User's selected approach
+- `research_artifact`: Complete Research Artifact from Phase 2
 
-The agent will:
+The agent uses the research artifact directly (no re-research) and will:
 - Run advocate/critic debate
 - Surface trade-offs and risks
 - Document rejected alternatives
@@ -142,23 +141,32 @@ Wait for user approval before planning.
 
 ### Phase 5: Planning
 
-Spawn `feature-plan` agent with all context:
-
-- Pass `path: docs/plans/<feature>/`
-
-**If --skip-tests:**
-- Pass `skip_tests: true`
+Spawn `feature-plan` agent with:
+- `path`: docs/plans/<feature>/
+- `research_artifact`: Complete Research Artifact from Phase 2
+- `refinement_summary`: Output from Phase 4
 
 The agent will:
-1. Present draft plan for user approval
-2. Write PLAN.md and MEMORY.md
-3. Spawn test-spec agent (unless skip_tests)
+1. Create plan with inline test specifications
+2. Present draft plan for user approval
+3. Write PLAN.md and MEMORY.md
+
+<checkpoint>
+STOP. Present plan summary to user:
+- Proposed chunks with dependencies
+- Test coverage summary
+- Any open questions or risks
+
+Wait for user approval before finalizing.
+</checkpoint>
 
 ## Completion
 
+After user approves at all 3 checkpoints (brainstorm, refinement, plan):
+
 ```
 Plan created:
-  - docs/plans/<feature>/PLAN.md
+  - docs/plans/<feature>/PLAN.md (includes inline test specifications)
   - docs/plans/<feature>/MEMORY.md
 
 Next: /intents:implement <feature>
@@ -170,4 +178,3 @@ Next: /intents:implement <feature>
 |--------|--------|
 | `--skip-brainstorm` | Idea already clear, skip ideation |
 | `--skip-research` | Context known, skip codebase/technical research |
-| `--skip-tests` | Skip test-spec step (pass to feature-plan agent) |
