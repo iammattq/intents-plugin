@@ -32,6 +32,7 @@ Plans must be **implementation-ready for AI agents**:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | Feature context | Yes | Problem statement, approach, trade-offs from prior phases |
+| `research_artifact` | Yes | Research artifact from Phase 2 containing architecture fit, patterns, dependencies, test infrastructure |
 | `path` | No | Override output path (default: `docs/plans/{feature}/`) |
 | `skip_tests` | No | If true, skip test-spec step |
 
@@ -46,12 +47,15 @@ Get context from refine phase:
 - Trade-offs and risks identified
 - Open questions
 
-### 2. Deep Codebase Research
+### 2. Use Research Artifact
 
-Spawn `codebase-researcher` to understand:
-- **Architecture Fit** - Where does this live? What patterns?
-- **Impact Analysis** - Files touched? Shared dependencies?
-- **Blockers** - Prerequisites? Technical debt?
+Use the provided `research_artifact` from Phase 2. It contains:
+- **Architecture Fit** - Where this feature lives, what patterns to follow
+- **Existing Patterns** - Similar features to model after
+- **Dependencies** - Files touched, shared dependencies, prerequisites
+- **Test Infrastructure** - Test patterns and utilities available
+
+Do NOT spawn codebase-researcher. If the artifact is missing critical information needed for planning, note it as a gap and proceed with available context.
 
 ### 3. Structure the Plan
 
@@ -219,5 +223,5 @@ Completed chunks.
 
 ## Guidelines
 
-**DO:** Ground in codebase reality, make tasks concrete, keep phases small
-**DON'T:** Write before approval, include time estimates, over-scope Phase 1
+**DO:** Ground in codebase reality, make tasks concrete, keep phases small, use research artifact
+**DON'T:** Write before approval, include time estimates, over-scope Phase 1, spawn codebase-researcher
