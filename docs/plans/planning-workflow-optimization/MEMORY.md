@@ -4,11 +4,10 @@
 
 ### Ready
 
-- **3** (M): Update feature-plan to accept research artifact
+- **4** (M): Inline test-spec into feature-plan
 
 ### Blocked
 
-- **4** (M): Inline test-spec into feature-plan → needs 3
 - **5** (M): Update plan.md orchestration → needs 4
 - **6** (S): Add --fast flag → needs 5
 
@@ -16,6 +15,7 @@
 
 - **1** (S): Expand Phase 2 research scope ✓
 - **2** (M): Update feature-refine to accept research artifact ✓
+- **3** (M): Update feature-plan to accept research artifact ✓
 
 ---
 
@@ -46,3 +46,16 @@
 
 #### Files
 - intents-plugin/agents/feature-refine/AGENT.md - Replaced codebase-researcher spawn with research artifact usage, added gap-fill mode, updated guidelines
+
+### Session: Chunk 3
+**Date:** 2026-01-09
+**Status:** Complete
+
+#### Completed
+- Added `research_artifact` input parameter to agent spec (required, contains architecture fit, patterns, dependencies, test infrastructure)
+- Replaced "Deep Codebase Research" section with "Use Research Artifact" section
+- Added instruction not to spawn codebase-researcher, note gaps and proceed with available context
+- Updated DO/DON'T guidelines to use research artifact and prohibit spawning codebase-researcher
+
+#### Files
+- intents-plugin/agents/feature-plan/AGENT.md - Replaced codebase-researcher spawn with research artifact usage, updated input parameters table, updated guidelines
