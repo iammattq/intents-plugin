@@ -3,6 +3,7 @@
 Stop hook for intents-plugin token tracking.
 
 Updates token counts and displays elapsed time + tokens after each response.
+Calculates costs based on Claude model pricing.
 """
 
 import json
@@ -10,6 +11,37 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 from glob import glob
+
+
+# Claude pricing per million tokens (as of Jan 2025)
+# https://www.anthropic.com/pricing
+PRICING = {
+    'claude-sonnet-4': {
+        'input': 3.00,
+        'output': 15.00,
+        'cache_read': 0.30,      # 90% discount on cached input
+        'cache_create': 3.75,    # 25% premium for cache creation
+    },
+    'claude-opus-4': {
+        'input': 15.00,
+        'output': 75.00,
+        'cache_read': 1.50,
+        'cache_create': 18.75,
+    },
+    'claude-haiku-3.5': {
+        'input': 0.80,
+        'output': 4.00,
+        'cache_read': 0.08,
+        'cache_create': 1.00,
+    },
+    # Default fallback (Sonnet pricing)
+    'default': {
+        'input': 3.00,
+        'output': 15.00,
+        'cache_read': 0.30,
+        'cache_create': 3.75,
+    },
+}
 
 
 def find_active_tracking():
@@ -59,13 +91,26 @@ def find_active_tracking():
     return candidates[0][1], candidates[0][2]
 
 
-def parse_transcript_tokens(transcript_path: str) -> tuple[int, int]:
+def parse_transcript_tokens(transcript_path: str) -> dict:
     """
     Sum tokens from transcript JSONL file.
 
-    Returns (tokens_in, tokens_out).
+    Returns dict with token counts by type:
+    {
+        'input_tokens': int,
+        'output_tokens': int,
+        'cache_read_tokens': int,
+        'cache_creation_tokens': int,
+        'model': str  # Most recently used model
+    }
     """
-    tokens_in = tokens_out = 0
+    totals = {
+        'input_tokens': 0,
+        'output_tokens': 0,
+        'cache_read_tokens': 0,
+        'cache_creation_tokens': 0,
+        'model': 'default',
+    }
 
     try:
         content = Path(transcript_path).read_text()
@@ -73,17 +118,71 @@ def parse_transcript_tokens(transcript_path: str) -> tuple[int, int]:
             if not line.strip():
                 continue
             try:
-                msg = json.loads(line)
-                usage = msg.get('usage')
+                entry = json.loads(line)
+
+                # Usage can be in multiple locations depending on message type
+                usage = None
+
+                # Check nested message.usage (most common for assistant messages)
+                if isinstance(entry.get('message'), dict):
+                    usage = entry['message'].get('usage')
+                    # Also try to get model from message
+                    if entry['message'].get('model'):
+                        totals['model'] = entry['message']['model']
+
+                # Fallback: check root level (some message types)
+                if not usage:
+                    usage = entry.get('usage')
+
+                # Check for model at root level
+                if entry.get('model'):
+                    totals['model'] = entry['model']
+
                 if usage:
-                    tokens_in += usage.get('input_tokens', 0)
-                    tokens_out += usage.get('output_tokens', 0)
+                    # Standard input/output tokens
+                    totals['input_tokens'] += usage.get('input_tokens', 0)
+                    totals['output_tokens'] += usage.get('output_tokens', 0)
+
+                    # Cache tokens (important for accurate cost calculation)
+                    totals['cache_read_tokens'] += usage.get('cache_read_input_tokens', 0)
+                    totals['cache_creation_tokens'] += usage.get('cache_creation_input_tokens', 0)
+
             except json.JSONDecodeError:
                 continue
     except (FileNotFoundError, PermissionError):
         pass
 
-    return tokens_in, tokens_out
+    return totals
+
+
+def calculate_cost(tokens: dict) -> float:
+    """
+    Calculate cost in USD based on token counts and model.
+
+    Args:
+        tokens: Dict with input_tokens, output_tokens, cache_read_tokens,
+                cache_creation_tokens, and model
+
+    Returns:
+        Cost in USD
+    """
+    model = tokens.get('model', 'default')
+
+    # Find matching pricing (check for partial model name matches)
+    pricing = PRICING['default']
+    for model_key, model_pricing in PRICING.items():
+        if model_key in model.lower():
+            pricing = model_pricing
+            break
+
+    # Calculate cost per million tokens
+    cost = 0.0
+    cost += (tokens.get('input_tokens', 0) / 1_000_000) * pricing['input']
+    cost += (tokens.get('output_tokens', 0) / 1_000_000) * pricing['output']
+    cost += (tokens.get('cache_read_tokens', 0) / 1_000_000) * pricing['cache_read']
+    cost += (tokens.get('cache_creation_tokens', 0) / 1_000_000) * pricing['cache_create']
+
+    return cost
 
 
 def parse_iso(iso_str: str) -> datetime:
@@ -110,9 +209,34 @@ def format_duration(start_iso: str, end_iso: str = None) -> str:
     return f"{minutes}m"
 
 
-def format_tokens(tokens_in: int, tokens_out: int) -> str:
-    """Format token counts."""
-    return f"{tokens_in:,} in / {tokens_out:,} out"
+def format_tokens(tokens_in: int, tokens_out: int, cost: float = None) -> str:
+    """Format token counts with optional cost."""
+    token_str = f"{tokens_in:,} in / {tokens_out:,} out"
+    if cost is not None:
+        return f"{token_str} │ ${cost:.2f}"
+    return token_str
+
+
+def get_total_input_tokens(phase: dict) -> int:
+    """Get total input tokens including cache tokens."""
+    return (
+        phase.get('tokens_in', 0) +
+        phase.get('cache_read_tokens', 0) +
+        phase.get('cache_creation_tokens', 0)
+    )
+
+
+def calculate_phase_cost(phase: dict) -> float:
+    """Calculate cost for a single phase."""
+    if not phase:
+        return 0.0
+    return calculate_cost({
+        'input_tokens': phase.get('tokens_in', 0),
+        'output_tokens': phase.get('tokens_out', 0),
+        'cache_read_tokens': phase.get('cache_read_tokens', 0),
+        'cache_creation_tokens': phase.get('cache_creation_tokens', 0),
+        'model': phase.get('model', 'default'),
+    })
 
 
 def build_display(tracking: dict) -> str:
@@ -133,23 +257,30 @@ def build_display(tracking: dict) -> str:
 
         if plan and plan.get('started'):
             duration = format_duration(plan['started'], plan.get('ended'))
-            tokens = format_tokens(plan.get('tokens_in', 0), plan.get('tokens_out', 0))
+            plan_in = get_total_input_tokens(plan)
+            plan_cost = calculate_phase_cost(plan)
+            tokens = format_tokens(plan_in, plan.get('tokens_out', 0), plan_cost)
             lines.append(f"    Planning:     {duration:>8} │ {tokens}")
 
         duration = format_duration(impl['started'], impl.get('ended'))
-        tokens = format_tokens(impl.get('tokens_in', 0), impl.get('tokens_out', 0))
+        impl_in = get_total_input_tokens(impl)
+        impl_cost = calculate_phase_cost(impl)
+        tokens = format_tokens(impl_in, impl.get('tokens_out', 0), impl_cost)
         lines.append(f"    Implementing: {duration:>8} │ {tokens}")
 
         # Total
-        total_in = (plan.get('tokens_in', 0) if plan else 0) + impl.get('tokens_in', 0)
+        total_in = (get_total_input_tokens(plan) if plan else 0) + get_total_input_tokens(impl)
         total_out = (plan.get('tokens_out', 0) if plan else 0) + impl.get('tokens_out', 0)
-        lines.append(f"    {'─' * 40}")
-        lines.append(f"    Total: {format_tokens(total_in, total_out)}")
+        total_cost = (calculate_phase_cost(plan) if plan else 0) + calculate_phase_cost(impl)
+        lines.append(f"    {'─' * 48}")
+        lines.append(f"    Total: {format_tokens(total_in, total_out, total_cost)}")
 
     elif plan and plan.get('started'):
         # Just planning phase
         duration = format_duration(plan['started'], plan.get('ended'))
-        tokens = format_tokens(plan.get('tokens_in', 0), plan.get('tokens_out', 0))
+        plan_in = get_total_input_tokens(plan)
+        plan_cost = calculate_phase_cost(plan)
+        tokens = format_tokens(plan_in, plan.get('tokens_out', 0), plan_cost)
         lines.append(f"⏱️  Planning: {duration} │ 📊 {tokens}")
 
     return "\n".join(lines)
@@ -176,15 +307,20 @@ def main():
     # Parse transcript for token counts
     transcript_path = data.get('transcript_path')
     if transcript_path:
-        tokens_in, tokens_out = parse_transcript_tokens(transcript_path)
+        tokens = parse_transcript_tokens(transcript_path)
 
-        # Update the active phase
+        # Update the active phase with all token types
+        def update_phase(phase: dict):
+            phase['tokens_in'] = tokens['input_tokens']
+            phase['tokens_out'] = tokens['output_tokens']
+            phase['cache_read_tokens'] = tokens['cache_read_tokens']
+            phase['cache_creation_tokens'] = tokens['cache_creation_tokens']
+            phase['model'] = tokens['model']
+
         if tracking.get('implement') and not tracking['implement'].get('ended'):
-            tracking['implement']['tokens_in'] = tokens_in
-            tracking['implement']['tokens_out'] = tokens_out
+            update_phase(tracking['implement'])
         elif tracking.get('plan') and not tracking['plan'].get('ended'):
-            tracking['plan']['tokens_in'] = tokens_in
-            tracking['plan']['tokens_out'] = tokens_out
+            update_phase(tracking['plan'])
 
         # Save updated tracking
         try:
