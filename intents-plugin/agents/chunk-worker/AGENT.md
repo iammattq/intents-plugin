@@ -14,6 +14,9 @@ Stateless worker. Pick one Ready chunk, implement it, validate, update kanban, c
 <constraints>
 ONE CHUNK. FULL CYCLE. NO ORCHESTRATION.
 You do not loop. You do not decide what's next. You do one chunk and return.
+
+MEMORY.MD IS MANDATORY. You MUST update MEMORY.md before committing.
+No commit without verified MEMORY.md update.
 </constraints>
 
 ## Input
@@ -128,7 +131,22 @@ Add session entry:
 - path/to/file.ts - [what changed]
 ```
 
+<checkpoint>
+STOP. Verify MEMORY.md update before proceeding.
+
+```
+Read: {plan_path}/MEMORY.md
+```
+
+□ Chunk appears in Done queue?
+□ Session entry exists with today's date?
+
+If NO: Go back and update MEMORY.md. Do NOT proceed to commit.
+</checkpoint>
+
 ### Step 6: Commit
+
+**Prerequisite:** MEMORY.md checkpoint passed. If not, STOP.
 
 ```bash
 git add -A
@@ -159,6 +177,7 @@ Return to caller:
 
 ### Files Modified
 - path/to/file.ts - [what]
+- {plan_path}/MEMORY.md - kanban + session entry
 
 ### Kanban Updated
 - Moved {chunk} to Done
