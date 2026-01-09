@@ -4,7 +4,7 @@
 
 ### Ready
 
-- **6** (S): Add --fast flag
+(none)
 
 ### Blocked
 
@@ -17,6 +17,7 @@
 - **3** (M): Update feature-plan to accept research artifact ✓
 - **4** (M): Inline test-spec into feature-plan ✓
 - **5** (M): Update plan.md orchestration ✓
+- **6** (S): Add --fast flag ✓
 
 ---
 
@@ -91,3 +92,17 @@
 
 #### Files
 - intents-plugin/commands/plan.md - Updated Phase 4/5 with explicit artifact passing, removed test-spec references, added plan checkpoint, removed --skip-tests option
+
+### Session: Chunk 6
+**Date:** 2026-01-09
+**Status:** Complete
+
+#### Completed
+- Added `--fast` to argument-hint in frontmatter
+- Added `--fast` to Usage section examples
+- Added "--fast Mode" section before Options with checkpoint consolidation behavior
+- Added recommendation guidance (when to use: experienced users, small features; when to avoid: complex features, unfamiliar codebases)
+- Added `--fast` to Options table with description
+
+#### Files
+- intents-plugin/commands/plan.md - Added --fast flag documentation, behavior section, and recommendation guidance

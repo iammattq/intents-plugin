@@ -1,6 +1,6 @@
 ---
 description: Create a feature plan with research workflow. Use when planning new features.
-argument-hint: <description> [--skip-brainstorm] [--skip-research]
+argument-hint: <description> [--skip-brainstorm] [--skip-research] [--fast]
 ---
 
 # /intents:plan
@@ -13,6 +13,7 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 /intents:plan <feature-description>
 /intents:plan <description> --skip-brainstorm
 /intents:plan <description> --skip-research
+/intents:plan <description> --fast
 ```
 
 ## Metrics Tracking
@@ -172,9 +173,38 @@ Plan created:
 Next: /intents:implement <feature>
 ```
 
+## --fast Mode
+
+When `--fast` is specified, checkpoints are consolidated for a streamlined workflow:
+
+| Standard | --fast |
+|----------|--------|
+| Checkpoint 1: Brainstorm approval | Auto-proceed after presenting summary |
+| Checkpoint 2: Refinement approval | Combined into single final approval |
+| Checkpoint 3: Plan approval | Combined into single final approval |
+
+**Behavior:**
+- **Checkpoint 1 (brainstorm):** Present summary, then automatically proceed to research. User can still interrupt if needed.
+- **Checkpoints 2+3 (refinement + plan):** Combined into a single final approval checkpoint. Present both refinement summary and draft plan together for one approval decision.
+
+### When to Use --fast
+
+**Recommended for:**
+- Experienced users familiar with the codebase
+- Small, well-defined features
+- Quick iterations on known patterns
+- Features similar to existing implementations
+
+**Avoid when:**
+- Complex features with many unknowns
+- Unfamiliar codebases requiring exploration
+- High-risk changes needing careful review
+- Features requiring significant architectural decisions
+
 ## Options
 
 | Option | Effect |
 |--------|--------|
 | `--skip-brainstorm` | Idea already clear, skip ideation |
 | `--skip-research` | Context known, skip codebase/technical research |
+| `--fast` | Consolidate checkpoints: auto-proceed brainstorm, combine refinement+plan approval |
