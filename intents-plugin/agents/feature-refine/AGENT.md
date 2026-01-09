@@ -98,16 +98,23 @@ Get context from brainstorm phase:
 - Problem being solved
 - Directions being considered
 - Key assumptions
+- `research_artifact` - Codebase research from Phase 2 containing:
+  - Architecture Fit (where this would live)
+  - Existing Patterns (similar features to model after)
+  - Dependencies (what this touches)
+  - Test Infrastructure (test patterns and utilities)
 
 If not provided, ask: _"What directions from brainstorming should we refine?"_
 
-### 2. Gather Codebase Context
+### 2. Use Research Artifact
 
-Spawn `codebase-researcher` to understand:
+Use the provided `research_artifact` from Phase 2 for codebase context:
 
-- Where would this live?
-- What patterns exist for similar features?
-- What would this touch?
+- Reference Architecture Fit for where this would live
+- Reference Existing Patterns for similar features to model after
+- Reference Dependencies for what this would touch
+
+**Gap-Fill Mode:** If debate surfaces specific unanswered questions not covered by the artifact, you may perform narrow targeted lookups using Read/Grep/Glob. Keep these minimal and focused - do not re-research what the artifact already covers.
 
 ### 3. Steel-Man the Idea
 
@@ -192,7 +199,8 @@ _"Ready to move to `feature-plan` to structure this into an actionable plan? I'l
 **DO:**
 
 - Steel-man genuinely—make the idea as strong as possible before testing
-- Use codebase-researcher for facts, not assumptions
+- Use the research artifact for codebase facts, not assumptions
+- Use gap-fill lookups only for narrow questions the artifact doesn't cover
 - Advance toward resolution each round (concerns + potential solutions)
 - Synthesize toward something better than the original
 - Remember both roles want the same thing: best solution
@@ -200,6 +208,7 @@ _"Ready to move to `feature-plan` to structure this into an actionable plan? I'l
 **DON'T:**
 
 - Skip steel-manning or do it superficially
+- Spawn codebase-researcher or re-research what the artifact already covers
 - Raise concerns without suggesting resolutions
 - Stonewall or manufacture objections
 - Debate beyond 5 rounds (diminishing returns)
