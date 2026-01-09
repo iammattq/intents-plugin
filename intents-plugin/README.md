@@ -127,7 +127,7 @@ This runs the full R-P workflow:
 **`/intents:plan`**
 - `--skip-brainstorm` - Skip ideation (idea already clear)
 - `--skip-research` - Skip codebase/tech research
-- `--skip-tests` - Skip test-spec step
+- `--fast` - Consolidate checkpoints for streamlined workflow
 
 **`/intents:implement`**
 - `--skip-review` - Skip code review
@@ -163,8 +163,7 @@ This runs the full R-P workflow:
 | `codebase-researcher` | Research | Explore internal codebase for context |
 | `technical-researcher` | Research | Research external docs and APIs |
 | `feature-refine` | Research | Advocate/critic debate with YAGNI lens |
-| `feature-plan` | Plan | Create PLAN.md with dependency graph |
-| `test-spec` | Plan | Generate TDD test specifications |
+| `feature-plan` | Plan | Create PLAN.md with dependency graph and inline test specs |
 | `chunk-worker` | Implement | Stateless worker: implement → validate → update kanban → commit |
 | `purple-team-a` | Implement | Write code (purple team workflow) |
 | `purple-team-b` | Implement | Validate and fix gaps (purple team workflow) |
@@ -249,7 +248,6 @@ intents-plugin/
     purple-team-b/AGENT.md
     security-auditor/AGENT.md
     technical-researcher/AGENT.md
-    test-spec/AGENT.md
     accessibility-reviewer/AGENT.md
 
   skills/

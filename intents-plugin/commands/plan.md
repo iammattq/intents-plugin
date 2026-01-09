@@ -111,6 +111,10 @@ Spawn `codebase-researcher` agent with expanded scope to gather all context need
 
 **Output:** Store findings in the Research Artifact structure (see above). This artifact passes forward to feature-refine and feature-plan agents, eliminating redundant codebase exploration.
 
+**Capturing the artifact:** After codebase-researcher completes, extract the Research Artifact section from its output as markdown text.
+
+**Passing to agents:** When spawning feature-refine and feature-plan, include the artifact in the agent prompt as the `research_artifact` parameter.
+
 ### Phase 3: External Research (if needed)
 
 Spawn `technical-researcher` agent only if feature requires:
@@ -125,7 +129,7 @@ Spawn `feature-refine` agent with:
 - `chosen_direction`: User's selected approach
 - `research_artifact`: Complete Research Artifact from Phase 2
 
-The agent uses the research artifact directly (no re-research) and will:
+The agent uses the research artifact directly (no broad re-research; narrow gap-fill lookups allowed if needed) and will:
 - Run advocate/critic debate
 - Surface trade-offs and risks
 - Document rejected alternatives
@@ -186,6 +190,11 @@ When `--fast` is specified, checkpoints are consolidated for a streamlined workf
 **Behavior:**
 - **Checkpoint 1 (brainstorm):** Present summary, then automatically proceed to research. User can still interrupt if needed.
 - **Checkpoints 2+3 (refinement + plan):** Combined into a single final approval checkpoint. Present both refinement summary and draft plan together for one approval decision.
+
+**Implementation:**
+1. After Phase 1: Check if --fast flag is set. If yes, proceed to Phase 2 without waiting for approval (still present summary).
+2. After Phase 4: If --fast, immediately proceed to Phase 5 without checkpoint pause.
+3. After Phase 5: Present combined output (refinement summary + draft plan) for single approval before writing files.
 
 ### When to Use --fast
 
