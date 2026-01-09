@@ -127,7 +127,6 @@ This runs the full R-P workflow:
 **`/intents:plan`**
 - `--skip-brainstorm` - Skip ideation (idea already clear)
 - `--skip-research` - Skip codebase/tech research
-- `--fast` - Consolidate checkpoints for streamlined workflow
 
 **`/intents:implement`**
 - `--skip-review` - Skip code review
