@@ -47,7 +47,14 @@ Agents are specialized AI assistants with **isolated context windows** that Clau
 
 Project-level agents override user-level agents with the same name.
 
-### AGENT.md File Structure
+### Agent File Structure
+
+**Important:** Agents are **flat markdown files**, not folders. Use `agents/code-reviewer.md`, NOT `agents/code-reviewer/AGENT.md`. The folder structure is for Skills only.
+
+| Type | Structure | Example |
+|------|-----------|---------|
+| Agents | Flat file | `agents/code-reviewer.md` |
+| Skills | Folder with SKILL.md | `skills/my-skill/SKILL.md` |
 
 ```yaml
 ---

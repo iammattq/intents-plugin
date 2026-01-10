@@ -238,19 +238,19 @@ intents-plugin/
     stop.py               # Updates tokens and displays metrics
 
   agents/
-    chunk-worker/AGENT.md        # Stateless chunk implementation
-    codebase-researcher/AGENT.md
-    code-reviewer/AGENT.md
-    doc-reviewer/AGENT.md
-    feature-plan/AGENT.md
-    feature-refine/AGENT.md
-    performance-reviewer/AGENT.md
-    purple-team-a/AGENT.md
-    purple-team-b/AGENT.md
-    security-auditor/AGENT.md
-    technical-researcher/AGENT.md
-    test-spec/AGENT.md
-    accessibility-reviewer/AGENT.md
+    chunk-worker.md              # Stateless chunk implementation
+    codebase-researcher.md
+    code-reviewer.md
+    doc-reviewer.md
+    feature-plan.md
+    feature-refine.md
+    performance-reviewer.md
+    purple-team-a.md
+    purple-team-b.md
+    security-auditor.md
+    technical-researcher.md
+    test-spec.md
+    accessibility-reviewer.md
 
   skills/
     feature-brainstorm/SKILL.md
