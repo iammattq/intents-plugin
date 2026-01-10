@@ -91,7 +91,7 @@ def find_active_tracking():
     return candidates[0][1], candidates[0][2]
 
 
-def parse_transcript_tokens(transcript_path: str) -> dict:
+def parse_transcript_tokens(transcript_path: str, debug: bool = True) -> dict:
     """
     Sum tokens from transcript JSONL file.
 
@@ -112,13 +112,24 @@ def parse_transcript_tokens(transcript_path: str) -> dict:
         'model': 'default',
     }
 
+    debug_log = []
+
     try:
         content = Path(transcript_path).read_text()
-        for line in content.splitlines():
+        lines = content.splitlines()
+        debug_log.append(f"Transcript: {transcript_path}")
+        debug_log.append(f"Total lines: {len(lines)}")
+
+        for i, line in enumerate(lines):
             if not line.strip():
                 continue
             try:
                 entry = json.loads(line)
+
+                # Log entry structure for debugging
+                entry_type = entry.get('type', 'unknown')
+                has_message = 'message' in entry
+                has_usage_root = 'usage' in entry
 
                 # Usage can be in multiple locations depending on message type
                 usage = None
@@ -139,6 +150,8 @@ def parse_transcript_tokens(transcript_path: str) -> dict:
                     totals['model'] = entry['model']
 
                 if usage:
+                    debug_log.append(f"Line {i}: type={entry_type}, usage={usage}")
+
                     # Standard input/output tokens
                     totals['input_tokens'] += usage.get('input_tokens', 0)
                     totals['output_tokens'] += usage.get('output_tokens', 0)
@@ -146,11 +159,26 @@ def parse_transcript_tokens(transcript_path: str) -> dict:
                     # Cache tokens (important for accurate cost calculation)
                     totals['cache_read_tokens'] += usage.get('cache_read_input_tokens', 0)
                     totals['cache_creation_tokens'] += usage.get('cache_creation_input_tokens', 0)
+                else:
+                    # Log entries without usage to understand structure
+                    if entry_type == 'assistant' or has_message:
+                        keys = list(entry.keys())
+                        msg_keys = list(entry.get('message', {}).keys()) if has_message else []
+                        debug_log.append(f"Line {i}: type={entry_type}, keys={keys}, msg_keys={msg_keys}")
 
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                debug_log.append(f"Line {i}: JSON error: {e}")
                 continue
-    except (FileNotFoundError, PermissionError):
-        pass
+    except (FileNotFoundError, PermissionError) as e:
+        debug_log.append(f"File error: {e}")
+
+    # Write debug log
+    if debug:
+        debug_log.append(f"Totals: {totals}")
+        try:
+            Path('/tmp/stop_hook_debug.log').write_text('\n'.join(debug_log))
+        except:
+            pass
 
     return totals
 
