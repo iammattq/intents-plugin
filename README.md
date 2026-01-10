@@ -1,5 +1,7 @@
 # Intents Plugin for Claude Code
 
+> **Warning**: This plugin is experimental and under active development. Expect breaking changes.
+
 A plugin that keeps Claude Code agents in the context "smart zone" through chunked planning, sub-agent orchestration, and shared memory.
 
 Inspired by [Dex Horthy's R-P-I workflow](https://www.youtube.com/watch?v=rmvDxxNubIg).
@@ -40,7 +42,9 @@ Commands are unprefixed: `/plan`, `/implement`, etc.
 
 **Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
-### Enabling Metrics Tracking (Optional)
+### Metrics Tracking (WIP - Not Currently Working)
+
+> **Note**: Metrics tracking hooks are a work in progress and do not currently function. This section documents the intended behavior for future implementation.
 
 To see elapsed time and token usage during `/intents:plan` and `/intents:implement`, add hooks to your project's `.claude/settings.local.json`:
 
