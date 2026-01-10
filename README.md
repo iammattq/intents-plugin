@@ -42,6 +42,15 @@ Commands are unprefixed: `/plan`, `/implement`, etc.
 
 **Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
+### Hooks (Auto-loaded)
+
+The plugin includes hooks that automatically track elapsed time and token usage:
+
+- **UserPromptSubmit** - Starts tracking when `/intents:plan` or `/intents:implement` is invoked
+- **Stop** - Displays elapsed time and token counts after each response
+
+Hooks load automatically when you use `--plugin-dir`. Run `/hooks` in Claude Code to review and approve them on first use.
+
 ## Quick Start
 
 ```bash
