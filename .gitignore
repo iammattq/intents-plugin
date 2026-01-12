@@ -33,7 +33,6 @@ yarn-error.log*
 
 # Local Claude Code config
 .claude/settings.local.json
-.claude/skills/skill-creator/
 _drafts/
 
 # vercel

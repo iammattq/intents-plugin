@@ -32,7 +32,7 @@ Plans must be **implementation-ready for AI agents**:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | Feature context | Yes | Problem statement, approach, trade-offs from prior phases |
-| `research_artifact` | Yes | Research artifact from Phase 2 containing architecture fit, patterns, dependencies, test infrastructure |
+| `research_artifact` | Yes | Research artifact containing architecture fit, patterns, dependencies, test infrastructure |
 | `path` | No | Override output path (default: `docs/plans/{feature}/`) |
 
 <process>
@@ -48,7 +48,7 @@ Get context from refine phase:
 
 ### 2. Use Research Artifact
 
-Use the provided `research_artifact` from Phase 2. It contains:
+Use the provided `research_artifact` parameter. It contains:
 - **Architecture Fit** - Where this feature lives, what patterns to follow
 - **Existing Patterns** - Similar features to model after
 - **Dependencies** - Files touched, shared dependencies, prerequisites
@@ -128,26 +128,40 @@ Before presenting:
 
 ### 6. Test Specification (Inline)
 
-Before presenting for approval, add test specifications to the plan:
+Before presenting for approval, add test specifications to the plan.
 
-**Analyze testable components:**
-- Identify units (functions, hooks, utilities) requiring unit tests
-- Identify integration points requiring integration tests
-- Map acceptance criteria to verifiable test conditions
+**Classify by risk** - ask "what breaks if this fails?":
+
+| Risk | Examples | Test Depth |
+|------|----------|------------|
+| Critical | Auth, payments, data validation | Thorough + edge cases |
+| High | Core business logic, APIs | Solid coverage |
+| Medium | Standard features | Key paths |
+| Low | Utilities, config, logging | Happy path only |
+
+**Choose test type by code type:**
+
+| Code Type | Primary Test Type |
+|-----------|-------------------|
+| Pure functions, algorithms | Unit tests |
+| API endpoints | Integration tests |
+| React/UI components | Integration tests |
+| Database operations | Integration tests |
+
+**Test behavior, not implementation** - frame around what the caller observes, not internal method calls.
 
 **For each chunk, specify:**
 ```
 ### Test Cases for Chunk X
 
-**Unit Tests:**
-- [ ] test_function_does_x - verifies [expected behavior]
-- [ ] test_function_handles_edge_case - verifies [edge case handling]
+| Component | Risk | Test Type |
+|-----------|------|-----------|
+| [name] | Critical/High/Med/Low | unit/integration |
 
-**Integration Tests (if applicable):**
-- [ ] test_component_integrates_with_y - verifies [integration point]
-
-**Acceptance Criteria:**
-- [ ] [User-facing behavior that must work]
+**Tests:**
+- [ ] [scenario] - expects [observable outcome]
+- [ ] Edge: [case] - expects [outcome]
+- [ ] Error: [scenario] - expects [handling]
 ```
 
 Include test specifications in the plan output (see draft template below).
@@ -163,10 +177,10 @@ Include test specifications in the plan output (see draft template below).
 
 ## Test Specification
 
-### Coverage Summary
-- Unit tests: [count] across [N] chunks
-- Integration tests: [count] (if applicable)
-- Acceptance criteria: [count]
+### Risk Summary
+- Critical: [count] components
+- High: [count] components
+- Medium/Low: [count] components
 
 ### Tests by Chunk
 [Test cases per chunk as defined in Step 6]

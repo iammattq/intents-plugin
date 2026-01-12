@@ -1,6 +1,6 @@
 ---
 description: Implement a planned feature with quality checks. Use when ready to build.
-argument-hint: <feature> [--skip-review] [--use-purple]
+argument-hint: <feature> [--skip-review]
 ---
 
 # /intents:implement
@@ -11,7 +11,6 @@ Orchestrate implementation of a planned feature using kanban-based chunk workers
 
 ```
 /intents:implement <feature>
-/intents:implement <feature> --use-purple
 /intents:implement <feature> --skip-review
 ```
 
@@ -93,45 +92,6 @@ LOOP while Ready has chunks:
 
 **✓ CHECKPOINT:** After each chunk (or batch), show results and ask user to continue.
 
-#### Purple Team Workflow (--use-purple)
-
-Same kanban loop, but use purple team iteration instead of chunk-worker:
-
-**For each Ready chunk:**
-
-```
-1. Spawn purple-team-a:
-   feature: docs/plans/<feature>/
-   chunk: <chunk_id>
-   tasks: <from PLAN.md>
-   files: <from PLAN.md>
-   ship_criteria: <from PLAN.md>
-
-2. Spawn purple-team-b:
-   feature: docs/plans/<feature>/
-   chunk: <chunk_id>
-   tasks: <from PLAN.md>
-   ship_criteria: <from PLAN.md>
-
-3. If GAPS_REMAIN and iteration < 3:
-   Resume purple-team-a with gaps
-   Resume purple-team-b to re-assess
-
-4. On PASS: Update MEMORY.md kanban (Ready→Done, unblock dependents)
-
-5. Commit the chunk
-```
-
-| Behavior | chunk-worker | purple team (--use-purple) |
-|----------|--------------|----------------------------|
-| Implementation | Worker does full cycle | Team A implements |
-| Validation | Worker validates | Team B validates with steel-man |
-| Fixing gaps | Worker retries | Team B fixes, or Team A gets another pass |
-| Iteration | 1 pass + retry | Up to 3 A↔B iterations |
-| Kanban update | Worker updates | You update after PASS |
-
-**✓ CHECKPOINT:** After each chunk, show results and ask user to continue.
-
 ### Stage 4: Review Loop (unless --skip-review)
 
 **MUST spawn** review agents using the Task tool (same pattern as Stage 3):
@@ -169,7 +129,6 @@ Next:
 | Option | Effect |
 |--------|--------|
 | `--skip-review` | Skip Stage 4 |
-| `--use-purple` | Use purple team workflow (Team A implements, Team B validates/fixes, up to 3 iterations) |
 
 ## Resume
 
