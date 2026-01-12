@@ -5,14 +5,48 @@
 A plugin that keeps Claude Code agents in the context "smart zone" through chunked planning, sub-agent orchestration, and shared memory.
 
 Inspired by [Dex Horthy's R-P-I workflow](https://www.youtube.com/watch?v=rmvDxxNubIg).
+Kudos to [Matt Pocock for the Kanban Inspiration](https://x.com/mattpocockuk/status/2008200878633931247?s=20)
 
 ## The Problem
 
-Claude Code works brilliantly in the "smart zone" (roughly the first 40% of context), but performance degrades on large features. This plugin solves it by:
+Building complex features with AI agents means managing context. When your context window fills up, it's game over—you lose continuity, the agent loses track of what it was doing, and you're stuck manually piecing things back together. Performance also degrades well before hitting limits (the "dumb zone" after ~40% context usage).
+
+This plugin solves context management for long-running implementations:
 
 1. **Chunked implementation** - Plans break work into context-sized pieces
 2. **Sub-agent orchestration** - Research, reviews, and implementation run in isolated contexts
 3. **Shared memory** - `MEMORY.md` tracks progress across sub-agents and sessions
+
+## Design Philosophy
+
+### Why Human-in-the-Loop?
+
+AI coding harnesses exist on a spectrum from fully autonomous to fully manual. This plugin sits toward the "human drives, agents execute" end.
+
+Fully autonomous approaches (like [Ralph](https://github.com/frankbria/ralph-claude-code)) are appealing—"fire and forget" sounds great. But they require pre-authorizing actions (via `--allowed-tools` or similar), and their safety mechanisms guard against different threats:
+
+| What autonomous loops guard against | What they don't guard against |
+|-------------------------------------|-------------------------------|
+| Runaway iterations (max retries) | Model confusion compounding |
+| API cost spikes (rate limits) | Wrong abstractions accumulating |
+| Session timeouts (5hr detection) | Drift from original intent |
+| Stagnation (no-change detection) | Subtle bugs building up |
+
+**This plugin takes a different stance:** The metric isn't "my agent ran for 3 days"—it's "my agent built what I intended." The failure mode isn't Claude stopping; it's Claude continuing while quality degrades. Phase gates catch drift early, before it compounds.
+
+More importantly, human-in-the-loop isn't about hitting enter. It's about spending your time on high-value work—designing systems, making architectural decisions, thinking through edge cases—while agents handle implementation. The workflow pipelines naturally: while agents implement Feature A, you're designing Feature B. Your bottleneck shifts from "writing code" to "thinking clearly about what to build."
+
+### When Autonomous Makes Sense
+
+- Well-defined, mechanical tasks (migrations, formatting, repetitive refactors)
+- Tasks where "good enough" is acceptable
+- When you'll review everything at the end anyway
+
+### When Orchestrated Makes Sense
+
+- Features requiring judgment calls
+- Unfamiliar codebases where drift is costly
+- When you want to catch problems early, not at the end
 
 ## Installation
 
