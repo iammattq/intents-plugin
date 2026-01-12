@@ -48,6 +48,8 @@ More importantly, human-in-the-loop isn't about hitting enter. It's about spendi
 - Unfamiliar codebases where drift is costly
 - When you want to catch problems early, not at the end
 
+For a deeper dive on harness engineering, see [Taming the Beast](https://mattquinn.ca/journal/taming-the-beast).
+
 ## Installation
 
 ### Option 1: Plugin Mode (Recommended)
