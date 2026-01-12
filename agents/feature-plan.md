@@ -32,8 +32,8 @@ Plans must be **implementation-ready for AI agents**:
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | Feature context | Yes | Problem statement, approach, trade-offs from prior phases |
+| `research_artifact` | Yes | Research artifact from Phase 2 containing architecture fit, patterns, dependencies, test infrastructure |
 | `path` | No | Override output path (default: `docs/plans/{feature}/`) |
-| `skip_tests` | No | If true, skip test-spec step |
 
 <process>
 
@@ -46,12 +46,15 @@ Get context from refine phase:
 - Trade-offs and risks identified
 - Open questions
 
-### 2. Deep Codebase Research
+### 2. Use Research Artifact
 
-Spawn `codebase-researcher` to understand:
-- **Architecture Fit** - Where does this live? What patterns?
-- **Impact Analysis** - Files touched? Shared dependencies?
-- **Blockers** - Prerequisites? Technical debt?
+Use the provided `research_artifact` from Phase 2. It contains:
+- **Architecture Fit** - Where this feature lives, what patterns to follow
+- **Existing Patterns** - Similar features to model after
+- **Dependencies** - Files touched, shared dependencies, prerequisites
+- **Test Infrastructure** - Test patterns and utilities available
+
+Do NOT spawn codebase-researcher. If the artifact is missing critical information needed for planning, note it as a gap and proceed with available context.
 
 ### 3. Structure the Plan
 
@@ -123,7 +126,33 @@ Before presenting:
   - Split XL chunks into smaller units
   - Target: mostly M and L chunks
 
-### 6. Present for Approval
+### 6. Test Specification (Inline)
+
+Before presenting for approval, add test specifications to the plan:
+
+**Analyze testable components:**
+- Identify units (functions, hooks, utilities) requiring unit tests
+- Identify integration points requiring integration tests
+- Map acceptance criteria to verifiable test conditions
+
+**For each chunk, specify:**
+```
+### Test Cases for Chunk X
+
+**Unit Tests:**
+- [ ] test_function_does_x - verifies [expected behavior]
+- [ ] test_function_handles_edge_case - verifies [edge case handling]
+
+**Integration Tests (if applicable):**
+- [ ] test_component_integrates_with_y - verifies [integration point]
+
+**Acceptance Criteria:**
+- [ ] [User-facing behavior that must work]
+```
+
+Include test specifications in the plan output (see draft template below).
+
+### 7. Present for Approval
 
 ```
 ## Draft Plan: [Feature]
@@ -132,38 +161,34 @@ Before presenting:
 
 ---
 
+## Test Specification
+
+### Coverage Summary
+- Unit tests: [count] across [N] chunks
+- Integration tests: [count] (if applicable)
+- Acceptance criteria: [count]
+
+### Tests by Chunk
+[Test cases per chunk as defined in Step 6]
+
+---
+
 Feasibility: High | Medium | Low
 Key codebase findings: [what shaped this plan]
 
 Ready to write to docs/plans/{feature}/PLAN.md?
+(Includes plan content + test specifications)
 
-Or adjust: [ ] Scope [ ] Phases [ ] Tasks
+Or adjust: [ ] Scope [ ] Phases [ ] Tasks [ ] Tests
 ```
 
-### 7. Write Files
+### 8. Write Files
 
 **Only after approval:**
 
 Path: `{path}` if provided, otherwise `docs/plans/{feature}/`
 
-Create PLAN.md and MEMORY.md at the path. Confirm locations to user.
-
-### 8. Test Spec (unless skip_tests)
-
-**MUST spawn** the `test-spec` agent:
-
-```
-Task: test-spec
-
-Feature: <feature-id>
-Plan: {path}/PLAN.md
-```
-
-The test-spec agent defines test cases before implementation (TDD).
-
-**✓ CHECKPOINT:** Show test spec results to user.
-
-**If skip_tests is true:** Skip this step, note in output that tests were skipped.
+Create PLAN.md (with test specifications included) and MEMORY.md at the path. Confirm locations to user.
 
 </process>
 
@@ -219,5 +244,5 @@ Completed chunks.
 
 ## Guidelines
 
-**DO:** Ground in codebase reality, make tasks concrete, keep phases small
-**DON'T:** Write before approval, include time estimates, over-scope Phase 1
+**DO:** Ground in codebase reality, make tasks concrete, keep phases small, use research artifact, include inline test specs
+**DON'T:** Write before approval, include time estimates, over-scope Phase 1, spawn codebase-researcher, spawn test-spec
