@@ -60,18 +60,17 @@ Agents in subsequent phases receive this artifact and use it directly instead of
 
 ### Phase 1: Brainstorm (unless --skip-brainstorm)
 
-Use the `feature-brainstorm` skill patterns to explore with the user:
-- Understand the actual problem (not assumed solution)
-- Prompt the user to share their ideas and debate them
-- Explore 3-5 approaches with honest skepticism
-- Offer to do small bits of research to help clarify topics and gather insights
-- Surface the real options: do nothing, minimal, full
-- Allow the user to decide the path forward with you as a thinking partner and counter point.
+Use the `feature-brainstorm` skill. Follow its three phases:
+1. **Problem Validation** - Confirm the problem before solutioning
+2. **Divergent Exploration** - Expand options without judgment
+3. **Probing and Challenging** - Stress-test and converge
+
+Offer small research assists during brainstorming to clarify unknowns.
 
 <checkpoint>
-STOP. Present brainstorm summary to user:
-- Problem statement (validated)
-- Options with trade-offs
+STOP. Present the Brainstorm Summary (see skill handoff template):
+- Problem (validated with specifics)
+- Options: do nothing, minimal, full
 - Your recommendation
 
 Wait for user to pick a direction before proceeding.
