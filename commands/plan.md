@@ -58,7 +58,15 @@ Agents in subsequent phases receive this artifact and use it directly instead of
 
 **User is the DECIDER at each phase.** Present findings and wait for approval before proceeding.
 
-### Phase 1: Brainstorm (unless --skip-brainstorm)
+### Start: Check for --skip-brainstorm
+
+Parse the user's input for `--skip-brainstorm`:
+- **If present:** Skip to Phase 1.5 (slug creation) then Phase 2
+- **If absent:** Brainstorming is MANDATORY. Do not skip it, even if the idea seems clear.
+
+Brainstorming validates assumptions and surfaces options the user may not have considered. Default to doing it.
+
+### Phase 1: Brainstorm (required unless --skip-brainstorm)
 
 Use the `feature-brainstorm` skill. Follow its three phases:
 1. **Problem Validation** - Confirm the problem before solutioning
