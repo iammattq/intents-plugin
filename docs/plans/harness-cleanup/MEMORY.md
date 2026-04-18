@@ -2,9 +2,9 @@
 
 ## Current State
 
-**Phase:** Not started
+**Phase:** 1 (in progress)
 **Branch:** `feature/harness-cleanup`
-**Status:** Plan approved, ready to implement
+**Status:** 1A complete; remaining Phase 1 chunks ready
 
 ## Kanban
 
@@ -14,7 +14,6 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 **Phase 1 — Plugin cleanup:**
 
-- **1A** (S): Fix chunk-worker correctness — remove `Task` from tools, rewrite Step 3, update header framing
 - **1B** (XS): Fix stale `README.md:129` plan-critic description
 - **1C** (S): Delete non-functional metrics hooks + README/implement.md sections
 - **1D** (XS): Delete orphaned `doc-reviewer` agent + README row
@@ -31,11 +30,28 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 ### Done
 
-(none yet)
+- **1A** (S): Fix chunk-worker correctness ✓
 
 ---
 
 ## Session Log
+
+### Session: 1A — chunk-worker correctness
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Removed `Task` from `agents/chunk-worker.md` tools frontmatter
+- Rewrote Step 3 to describe direct Read/Write/Edit implementation (no delegation)
+- Updated constraints block to note subagents cannot spawn subagents
+- Updated Step 4 validation checkpoint ("Implementation complete" instead of "agent returned")
+- Updated failure-fix loop to apply targeted fix via Read/Write/Edit (not spawn fix agent)
+
+#### Files
+- `agents/chunk-worker.md` — aligned doc with actual behavior
+
+#### Decisions
+- Also fixed Step 4's orphan references to "Implementation agent returned" and "Spawn fix agent" while in this file — same class of issue (aligning doc with reality). Extended the chunk slightly beyond literal plan scope because the references were obviously related.
 
 ### Session: Plan created
 **Date:** 2026-04-18
