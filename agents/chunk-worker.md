@@ -22,6 +22,12 @@ to other agents — subagents cannot spawn subagents in Claude Code.
 
 MEMORY.MD IS MANDATORY. You MUST update MEMORY.md before committing.
 No commit without verified MEMORY.md update.
+
+CONTEXT BUDGET. Aim to finish under ~200K tokens of effective context.
+Even on 1M-window models, quality degrades past ~25% usage — circular
+reasoning, forgotten decisions, false completion claims. If you cross
+~40%, stop, write a partial-status session entry in MEMORY.md (chunk
+stays in Ready), and return. Do not push through the dumb zone.
 </constraints>
 
 ## Input

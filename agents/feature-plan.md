@@ -25,9 +25,9 @@ STOP before writing files:
 ## Context Engineering Principles
 
 Plans must be **implementation-ready for AI agents**:
-- **Chunking** - Break into context-sized units (~40% context max)
+- **Chunking** - Target <200K effective tokens per chunk-worker session. Even on 1M-window models, performance degrades non-linearly past ~25% usage ("dumb zone" begins at 40%, compaction pressure at 40–50%). Isolated subagent sessions beat one large session.
 - **Context Isolation** - Each chunk implementable with minimal cross-referencing
-- **External Memory** - MEMORY.md tracks progress across resets
+- **External Memory** - MEMORY.md tracks progress across resets. Opus 4.7 is specifically better at file-system memory — lean on richer session logs to reduce re-derivation in later chunks.
 
 ## Input Parameters
 
@@ -86,13 +86,19 @@ Chunk table format:
 - List chunk IDs that must complete first
 - Chunks with same/no dependencies can run in parallel
 
-**T-shirt sizes:**
+**T-shirt sizes** (calibrated for Opus 4.7 on 1M context; fixed overhead per worker session is ~10–20K tokens):
+
 | Size | Scope | Guidance |
 |------|-------|----------|
-| S | 1-2 files, focused change | Merge with adjacent S if logical |
-| M | 3-5 files, moderate scope | Good standalone chunk |
-| L | 5-8 files, significant work | Split if high complexity |
-| XL | 8+ files or major refactor | Must split |
+| S | 1-3 files, focused change | Merge with adjacent S if logical |
+| M | 4-8 files, moderate scope | Good standalone chunk |
+| L | 9-15 files, significant work | Prefer this over multiple Ms when cohesive — fewer context loads saves tokens |
+| XL | 15+ files or major refactor | Split unless tightly cohesive and single reasoning thread |
+
+**Sizing notes:**
+- Bigger cohesive chunks are *more* token-efficient than many small ones (each worker re-reads PLAN.md + MEMORY.md + file context on startup).
+- Opus 4.7's new tokenizer counts 1x–1.35x vs Opus 4.6; existing estimates from prior planning may undercount by ~35%.
+- Still respect the <200K effective-work ceiling per chunk — past that, cohesion fragments even with bigger files in scope.
 
 ### 4. Harden the Plan (Internal)
 
@@ -125,8 +131,8 @@ Before presenting:
 - **Chunk sizing:**
   - Assign T-shirt size (S/M/L/XL) per chunk
   - Merge adjacent S chunks where logical
-  - Split XL chunks into smaller units
-  - Target: mostly M and L chunks
+  - Split XL chunks unless tightly cohesive
+  - Target: mostly M and L chunks; prefer L over splitting into two Ms when the work forms one reasoning thread
 
 ### 6. Test Specification (Inline)
 
