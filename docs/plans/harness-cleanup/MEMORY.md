@@ -15,7 +15,6 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 **Phase 1 — Plugin cleanup:**
 
 - **1C** (S): Delete non-functional metrics hooks + README/implement.md sections
-- **1D** (XS): Delete orphaned `doc-reviewer` agent + README row
 - **1E** (M): Merge `performance-reviewer` into `code-reviewer` as Performance sub-rubric; delete performance-reviewer agent
 
 **Phase 2 — Design system skill pilot:**
@@ -31,10 +30,24 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 - **1A** (S): Fix chunk-worker correctness ✓
 - **1B** (XS): Fix stale README plan-critic description ✓
 - **1F** (XS): Fix stale ccpp.md model version ✓
+- **1D** (XS): Delete orphaned doc-reviewer agent ✓
 
 ---
 
 ## Session Log
+
+### Session: 1D — delete doc-reviewer
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Deleted `agents/doc-reviewer.md`
+- Removed `doc-reviewer` row from README agent table
+- Verified no remaining references in active code paths (grep returns clean for `commands/`, `agents/`, `skills/`, `hooks/`, `README.md`)
+
+#### Files
+- `agents/doc-reviewer.md` (deleted)
+- `README.md` (removed table row)
 
 ### Session: 1F — ccpp.md model version
 **Date:** 2026-04-18

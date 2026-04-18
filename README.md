@@ -206,7 +206,6 @@ This runs the full R-P workflow:
 | `security-auditor` | Review | OWASP security review |
 | `accessibility-reviewer` | Review | WCAG compliance check |
 | `performance-reviewer` | Review | Performance issue detection |
-| `doc-reviewer` | Review | Documentation accuracy review |
 
 ## Skills Included
 
