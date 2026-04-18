@@ -3,6 +3,8 @@ name: plan-critic
 description: Use WHEN a chosen direction from brainstorming needs to be pressure-tested before planning. Applies multi-lens critique against codebase research and returns a Refinement Summary. Single pass, rubric-driven.
 tools: Read, Grep, Glob
 model: sonnet
+skills:
+  - design-system
 ---
 
 # Plan Critic

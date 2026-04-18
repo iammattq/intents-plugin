@@ -174,6 +174,7 @@ This runs the full R-P workflow:
 | Skill | Purpose |
 |-------|---------|
 | `feature-brainstorm` | Conversational ideation loop - pulls detail, challenges vagueness |
+| `design-system` | Auto-loads on UI files; reads project `DESIGN.md` if present, falls back to generic conventions |
 
 ## Plan Structure
 

@@ -3,6 +3,8 @@ name: feature-plan
 description: Use WHEN creating feature plans from refined ideas. Creates PLAN.md + MEMORY.md. Full access.
 tools: Read, Grep, Glob, Bash, Task, Write
 model: opus
+skills:
+  - design-system
 ---
 
 # Feature Plan
