@@ -199,7 +199,7 @@ This runs the full R-P workflow:
 |-------|-------|---------|
 | `codebase-researcher` | Research | Explore internal codebase for context |
 | `technical-researcher` | Research | Research external docs and APIs |
-| `feature-refine` | Research | Advocate/critic debate with YAGNI lens |
+| `plan-critic` | Research | Multi-lens critique of the chosen direction (code review, security, pragmatist, YAGNI, design) |
 | `feature-plan` | Plan | Create PLAN.md with dependency graph and test specs |
 | `chunk-worker` | Implement | Stateless worker: implement -> validate -> update kanban -> commit |
 | `code-reviewer` | Review | Validate code quality and patterns |
