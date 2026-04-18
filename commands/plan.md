@@ -100,7 +100,15 @@ if [ -f "docs/plans/_drafts/${slug}/.tracking.json" ]; then
 fi
 ```
 
-### Phase 2: Codebase Research (unless --skip-research)
+### Phase 2-3: Research (unless --skip-research)
+
+Determine research scope from the brainstorm output:
+
+**Codebase-only** (default): Feature uses existing tech, familiar patterns, no external integrations.
+
+**Codebase + External** (parallel): Brainstorm mentions new technology/APIs, unfamiliar patterns, or external integrations.
+
+#### Path A: Codebase-only
 
 Spawn `codebase-researcher` agent with expanded scope to gather all context needed by downstream phases:
 
@@ -115,37 +123,48 @@ Spawn `codebase-researcher` agent with expanded scope to gather all context need
 - Similar features: "What similar features exist to model after? Provide file paths."
 - Test patterns: "What test patterns/utilities does this codebase use? Where are test helpers?"
 
-**Output:** Store findings in the Research Artifact structure (see above). This artifact passes forward to feature-refine and feature-plan agents, eliminating redundant codebase exploration.
+**Output:** Store findings in the Research Artifact structure (see above). This artifact passes forward to plan-critic and feature-plan agents, eliminating redundant codebase exploration.
 
-**Capturing the artifact:** After codebase-researcher completes, extract the Research Artifact section from its output as markdown text.
+#### Path B: Parallel Research (codebase + external)
 
-**Passing to agents:** When spawning feature-refine and feature-plan, include the artifact in the agent prompt as the `research_artifact` parameter.
+Spawn both agents in parallel:
+1. `codebase-researcher` -- same scope as Path A
+2. `technical-researcher` -- focused on the external technology, APIs, or unfamiliar patterns identified in the brainstorm
 
-### Phase 3: External Research (if needed)
+Wait for both to complete, then merge outputs into a single Research Artifact:
+- **Architecture Fit**: codebase-researcher findings, supplemented by technical-researcher integration points
+- **Existing Patterns**: codebase-researcher findings
+- **Dependencies**: combine internal (codebase-researcher) and external (technical-researcher) dependencies
+- **Test Infrastructure**: codebase-researcher findings, supplemented by technical-researcher testing recommendations
 
-Spawn `technical-researcher` agent only if feature requires:
-- New technology/APIs
-- Unfamiliar patterns
-- External integrations
+#### Capturing and Passing the Artifact
 
-### Phase 4: Refinement
+After research completes (either path), extract the Research Artifact as markdown text. When spawning plan-critic and feature-plan, include it as the `research_artifact` parameter.
 
-Spawn `feature-refine` agent with:
-- `problem_statement`: Validated problem from brainstorm
-- `chosen_direction`: User's selected approach
-- `research_artifact`: Complete Research Artifact from Phase 2
+### Phase 4: Refinement Critique
 
-The agent uses the research artifact directly (no broad re-research; narrow gap-fill lookups allowed if needed) and will:
-- Run advocate/critic debate
-- Surface trade-offs and risks
-- Document rejected alternatives
+Spawn the `plan-critic` subagent (single pass) to pressure-test the chosen direction from multiple lenses and return a Refinement Summary.
+
+**Spawn with:**
+- `problem_statement` — what we're solving
+- `chosen_direction` — the approach selected during brainstorming
+- `research_artifact` — complete Research Artifact from Phase 2-3
+
+The critic applies relevant lenses (code review, security, pragmatist, YAGNI, design) in one pass and returns the Refinement Summary. No debate, no rounds — a single rubric-driven critique. See `agents/plan-critic.md` for the full rubric and output format.
+
+**Handling the result:**
+
+- If the Refinement Summary raises open questions the user needs to resolve, surface them before the checkpoint.
+- If a risk is flagged as a blocker (High likelihood + High impact with no viable mitigation), present it to the user with options: (a) address the blocker and re-critique, (b) revise the chosen direction, (c) abort planning.
+- Otherwise present the Refinement Summary directly.
 
 <checkpoint>
 STOP. Present refinement summary to user:
 - Recommendation with confidence level
 - Trade-offs accepted
-- Risks identified
+- Risks identified with mitigations
 - Rejected alternatives
+- Open questions (if any)
 
 Wait for user approval before planning.
 </checkpoint>
