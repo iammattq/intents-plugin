@@ -53,27 +53,75 @@ LOOP while Ready has chunks:
   2. Show Ready chunks to user
   3. Pick chunk(s) to implement:
      - Single: spawn one chunk-worker
-     - Parallel: spawn multiple chunk-workers for independent Ready chunks
+     - Parallel: consider multiple independent Ready chunks, then
+       run the pre-flight check in step 4 before spawning
 
-  4. Spawn chunk-worker(s):
+  4. Pre-flight conflict check (required before parallel spawn)
+     For each candidate chunk, read **Files:** from PLAN.md Chunk
+     Details (authoritative — NOT the summary table's count column).
+     Compute pairwise intersection across the selected set.
+
+     If any pair shares a file → STOP. Show the overlap to the user
+     and offer:
+       (a) Run sequentially in declared order
+       (b) Drop one chunk from this wave (name which)
+       (c) Abort — user revises PLAN.md to narrow Files scope
+
+     If disjoint → proceed to spawn.
+
+     (Single-chunk waves skip this check.)
+
+  5. Spawn chunk-worker(s):
 
      Task: chunk-worker
 
      chunk: <chunk_id>
      plan_path: docs/plans/<feature>/
 
-     Worker handles: implement → validate → update kanban → commit
+     Worker handles: implement → validate → write
+     {plan_path}/.chunks/{chunk_id}.json → commit declared Files scope
 
-  5. Show results to user
-  6. Check for phase boundary (all chunks in phase N done?)
+  6. Wave reducer (after all workers in the wave return)
+     Read every docs/plans/<feature>/.chunks/*.json produced by the
+     wave. Rebuild MEMORY.md sections from status files + PLAN.md
+     chunk table:
+
+       - Ready:   chunks in PLAN.md with no status file, minus Blocked
+       - Blocked: chunks whose Depends cite at least one chunk not
+                  yet status="done"
+       - Done:    chunks with status="done"
+       - status="failed" or "partial" → appear under Ready with an
+                  inline annotation (e.g., "- 1A ⚠ partial — see log")
+
+     Append each status file's session_entry to the Session Log
+     section in wave-completion order.
+
+     Commit MEMORY.md ONLY (.chunks/*.json is gitignored):
+
+       git add docs/plans/<feature>/MEMORY.md
+       git commit -m "chore(<feature>): reconcile kanban after wave"
+
+     No-op if docs/plans/<feature>/.chunks/ doesn't exist (e.g., an
+     in-flight plan predating this protocol).
+
+  7. Show results to user (including any failed/partial annotations)
+  8. Check for phase boundary (all chunks in phase N done?)
      - If phase complete: STOP for manual testing
      - User says "continue" → proceed to next phase
-  7. Loop
+  9. Loop
 ```
 
-**Parallel execution:** If multiple chunks are Ready with no dependencies between them, you can spawn multiple chunk-workers in a single message.
+**Parallel execution:** Multiple chunk-workers may be spawned in a single message ONLY after step 4 (pre-flight conflict check) passes. Even chunks with no declared `Depends` can conflict on Files scope — pre-flight catches that before workers race on the same file.
 
-**✓ CHECKPOINT:** After each chunk (or batch), show results and ask user to continue.
+**✓ CHECKPOINT:** After each wave (single chunk or batch), show results and ask user to continue.
+
+#### Status file directory (`.chunks/`)
+
+Workers write their outcome to `docs/plans/<feature>/.chunks/<chunk_id>.json`. See `agents/chunk-worker.md` for the authoritative schema (`chunk`, `status`, `files`, `unblocks`, `date`, `session_entry`). The wave reducer (step 6 above) reads these files to rebuild MEMORY.md and commits the result as a single orchestrator commit.
+
+- **Gitignored.** `.chunks/` is scratch — it's excluded via the root `.gitignore` (`docs/plans/*/.chunks/`). The audit trail lives in the reduced MEMORY.md Session Log (committed) and the per-chunk git commits. Status files can be deleted after reduction without losing information.
+- **Why gitignored, not committed:** keeps commit history clean; transient per-worker scratch exists only to avoid the MEMORY.md last-write-wins race between parallel workers. Narrow cost: switching machines mid-wave (after worker commit, before reducer runs) leaves unreduced status files behind locally. Not a real scenario for single-machine workflows.
+- **Fallback behavior.** If `docs/plans/<feature>/.chunks/` doesn't exist (e.g., an in-flight plan from before this protocol landed), the reducer is a no-op and those plans finish on the old protocol (workers edit MEMORY.md directly). No silent protocol mixing.
 
 ### Stage 4: Review Loop (unless --skip-review)
 
