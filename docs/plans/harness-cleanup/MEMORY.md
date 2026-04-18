@@ -14,7 +14,6 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 **Phase 1 — Plugin cleanup:**
 
-- **1C** (S): Delete non-functional metrics hooks + README/implement.md sections
 - **1E** (M): Merge `performance-reviewer` into `code-reviewer` as Performance sub-rubric; delete performance-reviewer agent
 
 **Phase 2 — Design system skill pilot:**
@@ -31,10 +30,33 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 - **1B** (XS): Fix stale README plan-critic description ✓
 - **1F** (XS): Fix stale ccpp.md model version ✓
 - **1D** (XS): Delete orphaned doc-reviewer agent ✓
+- **1C** (S): Delete non-functional metrics hooks ✓
 
 ---
 
 ## Session Log
+
+### Session: 1C — delete metrics hooks
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Deleted `hooks/` directory (stop.py, user_prompt_submit.py, hooks.json, __pycache__)
+- Removed Metrics Tracking section from README.md
+- Removed `hooks/` entry from README Directory Structure (also corrected the section to include save-mem.md which was missing)
+- Removed Metrics Tracking section from commands/implement.md
+- Removed Metrics Tracking section from commands/plan.md
+- Simplified Phase 1.5 in plan.md — removed dead tracking-file-migration bash block
+- Verified no remaining references to user_prompt_submit/stop.py in active .md files
+
+#### Files
+- `hooks/` (deleted)
+- `README.md` (removed Metrics section + directory structure entry)
+- `commands/implement.md` (removed Metrics section)
+- `commands/plan.md` (removed Metrics section + Phase 1.5 tracking bash)
+
+#### Decisions
+- Left orphaned `docs/plans/_drafts/*` directories in place for now — they were created by the now-deleted hook and are harmless. Can be cleaned up later if desired.
 
 ### Session: 1D — delete doc-reviewer
 **Date:** 2026-04-18
