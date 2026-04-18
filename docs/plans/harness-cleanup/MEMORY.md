@@ -17,7 +17,6 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 - **1C** (S): Delete non-functional metrics hooks + README/implement.md sections
 - **1D** (XS): Delete orphaned `doc-reviewer` agent + README row
 - **1E** (M): Merge `performance-reviewer` into `code-reviewer` as Performance sub-rubric; delete performance-reviewer agent
-- **1F** (XS): Fix stale `ccpp.md:52` model version (Opus 4.5 → 4.7)
 
 **Phase 2 — Design system skill pilot:**
 
@@ -31,10 +30,21 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 - **1A** (S): Fix chunk-worker correctness ✓
 - **1B** (XS): Fix stale README plan-critic description ✓
+- **1F** (XS): Fix stale ccpp.md model version ✓
 
 ---
 
 ## Session Log
+
+### Session: 1F — ccpp.md model version
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Updated `commands/ccpp.md:52` commit template: Claude Opus 4.5 → 4.7
+
+#### Files
+- `commands/ccpp.md`
 
 ### Session: 1B — README plan-critic line
 **Date:** 2026-04-18
