@@ -78,43 +78,6 @@ Commands are unprefixed: `/plan`, `/implement`, etc.
 
 **Note:** Standalone mode may conflict with existing `.claude/` configurations.
 
-### Metrics Tracking (WIP - Not Currently Working)
-
-> **Note**: Metrics tracking hooks are a work in progress and do not currently function. This section documents the intended behavior for future implementation.
-
-To see elapsed time and token usage during `/intents:plan` and `/intents:implement`, add hooks to your project's `.claude/settings.local.json`:
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [{
-      "matcher": "",
-      "hooks": [{
-        "type": "command",
-        "command": "python3 /path/to/intents-plugin/hooks/user_prompt_submit.py"
-      }]
-    }],
-    "Stop": [{
-      "matcher": "",
-      "hooks": [{
-        "type": "command",
-        "command": "python3 /path/to/intents-plugin/hooks/stop.py"
-      }]
-    }]
-  }
-}
-```
-
-Replace `/path/to/intents-plugin` with the actual path. After setup, you'll see metrics like:
-
-```
-feature-name
-    Planning:     15m | 52,103 in / 14,221 out
-    Implementing:  8m | 31,847 in /  9,432 out
-    ------------------------------------------------
-    Total: 83,950 in / 23,653 out
-```
-
 ## Quick Start
 
 ### 1. Plan a feature
@@ -126,7 +89,7 @@ feature-name
 This runs the full R-P workflow:
 - **Brainstorm** - Conversational loop to pull detail out and challenge vagueness
 - **Research** - Explore codebase for patterns and fit
-- **Refine** - Advocate/critic debate with YAGNI lens
+- **Refine** - Multi-lens critique of the chosen direction (code review, security, pragmatist, YAGNI, design)
 - **Plan** - Create PLAN.md with chunks and dependency graph
 
 **Skip options:**
@@ -205,8 +168,6 @@ This runs the full R-P workflow:
 | `code-reviewer` | Review | Validate code quality and patterns |
 | `security-auditor` | Review | OWASP security review |
 | `accessibility-reviewer` | Review | WCAG compliance check |
-| `performance-reviewer` | Review | Performance issue detection |
-| `doc-reviewer` | Review | Documentation accuracy review |
 
 ## Skills Included
 
@@ -280,10 +241,7 @@ intents-plugin/
     plan.md
     implement.md
     ccpp.md
-
-  hooks/
-    user_prompt_submit.py
-    stop.py
+    save-mem.md
 
   docs/                   # Research and plans
     plans/

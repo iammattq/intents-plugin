@@ -15,14 +15,6 @@ Facilitate the Research-to-Plan workflow with user as DECIDER.
 /intents:plan <description> --skip-research
 ```
 
-## Metrics Tracking
-
-When this command starts, the `UserPromptSubmit` hook automatically creates:
-`docs/plans/_drafts/<slug>/.tracking.json`
-
-This tracks elapsed time and token usage throughout the planning process.
-After classification, the tracking file moves to the feature's final location.
-
 ## Research Artifact
 
 Phase 2 produces a research artifact that downstream phases consume. This eliminates redundant codebase exploration.
@@ -86,19 +78,7 @@ Wait for user to pick a direction before proceeding.
 
 ### Phase 1.5: Create Slug
 
-After brainstorm, create a slug for the feature and migrate the tracking file:
-
-```bash
-# Create slug from the feature description
-slug="<slugified-description>"
-
-# Move tracking from drafts to final location
-if [ -f "docs/plans/_drafts/${slug}/.tracking.json" ]; then
-  mkdir -p "docs/plans/${slug}"
-  mv "docs/plans/_drafts/${slug}/.tracking.json" "docs/plans/${slug}/.tracking.json"
-  rmdir "docs/plans/_drafts/${slug}" 2>/dev/null
-fi
-```
+After brainstorm, create a slug for the feature.
 
 ### Phase 2-3: Research (unless --skip-research)
 

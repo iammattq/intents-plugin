@@ -1,7 +1,7 @@
 ---
 name: chunk-worker
 description: Stateless worker that implements ONE chunk from kanban. Reads Ready queue, implements, validates, updates MEMORY.md, commits. Caller orchestrates.
-tools: Read, Grep, Glob, Bash, Task, Write, Edit
+tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 ---
 
@@ -12,8 +12,11 @@ Begin responses with: `[⚙️ CHUNK WORKER]`
 Stateless worker. Pick one Ready chunk, implement it, validate, update kanban, commit, exit.
 
 <constraints>
-ONE CHUNK. FULL CYCLE. NO ORCHESTRATION.
-You do not loop. You do not decide what's next. You do one chunk and return.
+ONE CHUNK. FULL CYCLE.
+You do not loop. You do not pick what's next. You do one chunk and return.
+
+You implement the chunk directly using Read/Write/Edit. You cannot delegate
+to other agents — subagents cannot spawn subagents in Claude Code.
 
 MEMORY.MD IS MANDATORY. You MUST update MEMORY.md before committing.
 No commit without verified MEMORY.md update.
@@ -55,32 +58,25 @@ git branch --show-current
 
 ### Step 3: Implement
 
-Spawn general-purpose agent:
+Implement the chunk directly using Read/Write/Edit. You loaded the chunk
+section from PLAN.md in Step 1, which gives you:
 
-```
-Implement Chunk [{chunk}]
+- Tasks (what to build)
+- Files (scope — what you may create or modify)
+- Definition of Done (ship criteria)
 
-## Tasks
-[Tasks from PLAN.md chunk section]
+Execute:
 
-## Files
-[File list from plan]
-
-## Definition of Done
-[Ship criteria from plan]
-
-## Guidelines
-- Follow existing code patterns
-- Minimal changes only
-- No documentation unless specified
-```
-
-Wait for agent to return.
+1. Read any existing files listed in the Files scope
+2. Apply changes per the Tasks — Edit for existing files, Write for new files
+3. Follow existing code patterns in the surrounding code
+4. Minimal changes only — no scope creep beyond the Tasks
+5. No documentation unless specified in the chunk's Tasks
 
 ### Step 4: Validate
 
 <checkpoint>
-Implementation agent returned. STOP.
+Implementation complete. STOP and validate.
 
 1. Re-read PLAN.md chunk section
 2. Read each file created/modified
@@ -98,7 +94,7 @@ ANY failed → attempt fix or report failure
 ```
 
 If validation fails:
-1. Spawn fix agent with specific failure
+1. Apply a targeted fix yourself using Read/Write/Edit
 2. Re-validate
 3. If still failing after 2 attempts: report failure, do not update MEMORY.md
 
