@@ -126,7 +126,7 @@ feature-name
 This runs the full R-P workflow:
 - **Brainstorm** - Conversational loop to pull detail out and challenge vagueness
 - **Research** - Explore codebase for patterns and fit
-- **Refine** - Advocate/critic debate with YAGNI lens
+- **Refine** - Multi-lens critique of the chosen direction (code review, security, pragmatist, YAGNI, design)
 - **Plan** - Create PLAN.md with chunks and dependency graph
 
 **Skip options:**

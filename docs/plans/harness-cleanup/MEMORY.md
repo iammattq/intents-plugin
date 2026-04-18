@@ -14,7 +14,6 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 **Phase 1 — Plugin cleanup:**
 
-- **1B** (XS): Fix stale `README.md:129` plan-critic description
 - **1C** (S): Delete non-functional metrics hooks + README/implement.md sections
 - **1D** (XS): Delete orphaned `doc-reviewer` agent + README row
 - **1E** (M): Merge `performance-reviewer` into `code-reviewer` as Performance sub-rubric; delete performance-reviewer agent
@@ -31,10 +30,21 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 ### Done
 
 - **1A** (S): Fix chunk-worker correctness ✓
+- **1B** (XS): Fix stale README plan-critic description ✓
 
 ---
 
 ## Session Log
+
+### Session: 1B — README plan-critic line
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Updated `README.md:129` to describe multi-lens critique instead of advocate/critic debate
+
+#### Files
+- `README.md`
 
 ### Session: 1A — chunk-worker correctness
 **Date:** 2026-04-18
