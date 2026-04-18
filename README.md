@@ -168,7 +168,6 @@ This runs the full R-P workflow:
 | `code-reviewer` | Review | Validate code quality and patterns |
 | `security-auditor` | Review | OWASP security review |
 | `accessibility-reviewer` | Review | WCAG compliance check |
-| `performance-reviewer` | Review | Performance issue detection |
 
 ## Skills Included
 

@@ -2,9 +2,9 @@
 
 ## Current State
 
-**Phase:** 1 (in progress)
+**Phase:** 1 complete; Phase 2 ready
 **Branch:** `feature/harness-cleanup`
-**Status:** 1A complete; remaining Phase 1 chunks ready
+**Status:** All Phase 1 chunks complete. Ready to open PR 1, then start Phase 2 (design-system skill) on a fresh branch.
 
 ## Kanban
 
@@ -14,7 +14,7 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 **Phase 1 — Plugin cleanup:**
 
-- **1E** (M): Merge `performance-reviewer` into `code-reviewer` as Performance sub-rubric; delete performance-reviewer agent
+(Phase 1 complete — all six chunks done)
 
 **Phase 2 — Design system skill pilot:**
 
@@ -31,10 +31,34 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 - **1F** (XS): Fix stale ccpp.md model version ✓
 - **1D** (XS): Delete orphaned doc-reviewer agent ✓
 - **1C** (S): Delete non-functional metrics hooks ✓
+- **1E** (M): Merge performance-reviewer into code-reviewer ✓
 
 ---
 
 ## Session Log
+
+### Session: 1E — merge performance-reviewer into code-reviewer
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Updated `code-reviewer.md` description to reflect performance coverage; removed stale reference to non-existent `design-reviewer` agent
+- Added Performance section to code-reviewer checklist with sub-rubrics: React Runtime, Bundle Size, Data Fetching, Memory & Runtime, SSR Optimizations
+- De-duplicated — items already in React section (stable keys, no inline object/array literals) noted as covered there rather than repeated
+- Updated Process step 2 to optionally run `pnpm build` for bundle analysis when relevant
+- Removed "Delegate When Needed → Performance concerns?" line (now handled directly)
+- Deleted `agents/performance-reviewer.md`
+- Removed performance-reviewer row from README agent table
+- Verified no remaining references in active code paths
+
+#### Files
+- `agents/code-reviewer.md` (modified — added Performance section, updated description + process)
+- `agents/performance-reviewer.md` (deleted)
+- `README.md` (removed table row)
+
+#### Decisions
+- Performance reasoning now runs at code-reviewer's Opus level (was Haiku); implicitly upgrades quality of complexity/algorithmic analysis
+- Kept Performance section organized by sub-rubric (React Runtime / Bundle / Data / Memory / SSR) rather than flattening — matches how the content lived in the original agent
 
 ### Session: 1C — delete metrics hooks
 **Date:** 2026-04-18
