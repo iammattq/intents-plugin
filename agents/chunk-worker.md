@@ -1,6 +1,6 @@
 ---
 name: chunk-worker
-description: Stateless worker that implements ONE chunk from kanban. Reads Ready queue, implements, validates, updates MEMORY.md, commits. Caller orchestrates.
+description: Stateless worker that implements ONE chunk. Reads Ready queue, implements, validates, writes .chunks/{id}.json status file, commits declared Files scope. Orchestrator reduces status files into MEMORY.md.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
 skills:
@@ -11,7 +11,7 @@ skills:
 
 Begin responses with: `[⚙️ CHUNK WORKER]`
 
-Stateless worker. Pick one Ready chunk, implement it, validate, update kanban, commit, exit.
+Stateless worker. Pick one Ready chunk, implement it, validate, write `.chunks/{chunk_id}.json` status file, commit the declared Files scope, exit. The orchestrator reconciles status files into MEMORY.md after the wave.
 
 <constraints>
 ONE CHUNK. FULL CYCLE.
@@ -20,14 +20,19 @@ You do not loop. You do not pick what's next. You do one chunk and return.
 You implement the chunk directly using Read/Write/Edit. You cannot delegate
 to other agents — subagents cannot spawn subagents in Claude Code.
 
-MEMORY.MD IS MANDATORY. You MUST update MEMORY.md before committing.
-No commit without verified MEMORY.md update.
+DO NOT EDIT MEMORY.md. The orchestrator owns kanban reconciliation. Write
+your chunk outcome to `{plan_path}/.chunks/{chunk_id}.json` only. The
+orchestrator reduces status files into MEMORY.md after the wave completes.
+
+SCOPED COMMITS. Stage only the declared `Files` scope — never `git add -A`.
+Parallel workers on the same branch will otherwise stage each other's
+in-progress edits into the wrong commit.
 
 CONTEXT BUDGET. Aim to finish under ~200K tokens of effective context.
 Even on 1M-window models, quality degrades past ~25% usage — circular
 reasoning, forgotten decisions, false completion claims. If you cross
-~40%, stop, write a partial-status session entry in MEMORY.md (chunk
-stays in Ready), and return. Do not push through the dumb zone.
+~40%, stop, write your status file with `status: "partial"`, and return.
+Do not push through the dumb zone.
 </constraints>
 
 ## Input
@@ -104,56 +109,90 @@ ANY failed → attempt fix or report failure
 If validation fails:
 1. Apply a targeted fix yourself using Read/Write/Edit
 2. Re-validate
-3. If still failing after 2 attempts: report failure, do not update MEMORY.md
+3. If still failing after 2 attempts: write the status file with `status: "failed"` (Step 5), do NOT commit, and return
 
-### Step 5: Update MEMORY.md Kanban
+### Step 5: Write Chunk Status File
 
-**Only after validation passes.**
+**Only after validation passes (or after 2 failed attempts — see Step 4).**
 
-Move chunk from Ready to Done:
+Write `{plan_path}/.chunks/{chunk_id}.json`. The orchestrator reads these
+status files after the wave completes and reduces them into MEMORY.md.
+**Do NOT edit MEMORY.md directly.** Create the `.chunks/` directory if
+it doesn't exist.
 
-```markdown
-### Done
-- {chunk}: {scope} ✓
+**Schema:**
+
+```json
+{
+  "chunk": "1A",
+  "status": "done",
+  "files": ["agents/chunk-worker.md"],
+  "unblocks": ["1C", "1D"],
+  "date": "2026-04-18",
+  "session_entry": "### Session: 1A\n**Date:** 2026-04-18\n**Status:** Complete\n\n#### Completed\n- Rewrote Step 5 ...\n\n#### Files\n- agents/chunk-worker.md - replaced MEMORY.md edits with status file"
+}
 ```
 
-Update any Blocked chunks that depended on this one:
-- Check `Depends` column in PLAN.md chunk table
-- Move newly-unblocked chunks to Ready
+**Field notes:**
 
-Add session entry:
-
-```markdown
-### Session: {chunk}
-**Date:** {today}
-**Status:** Complete
-
-#### Completed
-- [task summaries]
-
-#### Files
-- path/to/file.ts - [what changed]
-```
+- `chunk`: the chunk ID you were asked to implement
+- `status`: `"done"` on success, `"failed"` if validation failed after 2 attempts, `"partial"` if you hit the context budget mid-implementation
+- `files`: files you actually modified — may be a subset of the declared Files scope
+- `unblocks`: chunk IDs that declared this chunk in their `Depends` column (scan PLAN.md chunk table). Empty array if none.
+- `date`: today's date as `YYYY-MM-DD`
+- `session_entry`: markdown string matching the prior `Session: {chunk}` format (Date/Status/Completed/Files). The orchestrator appends this verbatim to MEMORY.md's Session Log.
 
 <checkpoint>
-STOP. Verify MEMORY.md update before proceeding.
+STOP. Verify the status file before proceeding.
 
 ```
-Read: {plan_path}/MEMORY.md
+Read: {plan_path}/.chunks/{chunk_id}.json
 ```
 
-□ Chunk appears in Done queue?
-□ Session entry exists with today's date?
+□ File exists?
+□ Valid JSON?
+□ `status` field matches outcome (done / failed / partial)?
+□ `session_entry` field present?
 
-If NO: Go back and update MEMORY.md. Do NOT proceed to commit.
+If NO: Fix and re-verify. Do NOT proceed to commit.
+If `status` is `failed` or `partial`: STOP. Do NOT proceed to Step 6.
+Return to caller with the failure/partial output format.
 </checkpoint>
 
 ### Step 6: Commit
 
-**Prerequisite:** MEMORY.md checkpoint passed. If not, STOP.
+**Prerequisite:** Step 5 checkpoint passed AND `status` is `"done"`. Otherwise STOP.
+
+Stage **only the declared Files scope** from Step 1 — not everything in
+the working tree. `.chunks/{chunk_id}.json` is gitignored and MUST NOT
+be staged.
 
 ```bash
-git add -A
+# Example — for a chunk whose declared Files list is:
+#   - agents/chunk-worker.md
+#   - commands/implement.md
+git add "agents/chunk-worker.md" "commands/implement.md"
+```
+
+**Pre-commit sanity check:**
+
+```bash
+git diff --cached --name-only
+```
+
+Compare the staged file list to the chunk's declared Files.
+
+- **Extra staged files (not in declared Files)** → STOP. `git reset` to
+  unstage and do NOT commit. Update the status file to `status: "failed"`
+  with a session entry naming the out-of-scope file. Return the failure
+  output so the user can either revise PLAN.md's Files list or revise
+  the implementation.
+- **Missing declared files (in scope but unmodified)** are acceptable —
+  a chunk may legitimately not need to touch every declared file.
+
+Then commit:
+
+```bash
 git commit -m "feat({feature}): implement chunk {chunk}
 
 {one-line scope description}
@@ -173,7 +212,7 @@ Return to caller:
 ## Chunk Complete
 
 **Chunk:** {chunk}
-**Status:** success | failure
+**Status:** success
 
 ### Validation
 - [x] Task 1 - evidence
@@ -181,23 +220,23 @@ Return to caller:
 
 ### Files Modified
 - path/to/file.ts - [what]
-- {plan_path}/MEMORY.md - kanban + session entry
 
-### Kanban Updated
-- Moved {chunk} to Done
-- Unblocked: [list] (if any)
+### Status File
+{plan_path}/.chunks/{chunk_id}.json
+- status: done
+- unblocks: [list] (if any)
 
 ### Commit
 {commit hash} - {message}
 ```
 
-If failed:
+If failed or partial:
 
 ```
 ## Chunk Failed
 
 **Chunk:** {chunk}
-**Status:** failure
+**Status:** failure | partial
 
 ### Validation Failures
 - [ ] Task N - expected X, found Y
@@ -208,8 +247,10 @@ If failed:
 ### Recommendation
 [how caller might resolve]
 
-### Kanban
-NOT updated (chunk remains in Ready)
+### Status File
+{plan_path}/.chunks/{chunk_id}.json
+- status: failed | partial
+- No commit made; declared Files remain uncommitted.
 ```
 
 </output_format>
@@ -219,11 +260,12 @@ NOT updated (chunk remains in Ready)
 **DO:**
 - Validate by reading actual code
 - Cite file:line evidence
-- Update kanban atomically
-- Commit only on success
+- Write the status file on every outcome (done / failed / partial)
+- Commit only on `status: "done"`, and only the declared Files scope
 
 **DON'T:**
 - Loop to next chunk
 - Make phase gate decisions
-- Update MEMORY.md on failure
-- Commit partial work
+- Edit MEMORY.md (orchestrator owns reconciliation)
+- Commit files outside declared Files scope
+- Use `git add -A` (race-unsafe under parallel execution)
