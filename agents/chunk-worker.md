@@ -3,6 +3,8 @@ name: chunk-worker
 description: Stateless worker that implements ONE chunk from kanban. Reads Ready queue, implements, validates, updates MEMORY.md, commits. Caller orchestrates.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: opus
+skills:
+  - design-system
 ---
 
 # Chunk Worker

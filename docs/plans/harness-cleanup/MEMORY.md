@@ -2,9 +2,9 @@
 
 ## Current State
 
-**Phase:** 1 complete; Phase 2 ready
-**Branch:** `feature/harness-cleanup`
-**Status:** All Phase 1 chunks complete. Ready to open PR 1, then start Phase 2 (design-system skill) on a fresh branch.
+**Phase:** 2 complete (both phases done)
+**Branch:** `feature/design-system-skill` (Phase 2)
+**Status:** Phase 1 merged (PR #7, commit 4b8e46d). Phase 2 implemented; ready for PR.
 
 ## Kanban
 
@@ -18,7 +18,7 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 
 **Phase 2 — Design system skill pilot:**
 
-- **2A** (M): Create `design-system` skill with DESIGN.md loader + starter template
+(Phase 2 complete)
 
 ### Blocked
 
@@ -32,10 +32,45 @@ All Phase 1 chunks are independent — can be picked in any order or run in para
 - **1D** (XS): Delete orphaned doc-reviewer agent ✓
 - **1C** (S): Delete non-functional metrics hooks ✓
 - **1E** (M): Merge performance-reviewer into code-reviewer ✓
+- **2A** (M): design-system skill with DESIGN.md loader + starter template ✓
 
 ---
 
 ## Session Log
+
+### Session: 2A — design-system skill pilot
+**Date:** 2026-04-18
+**Status:** Complete
+
+#### Completed
+- Created `skills/design-system/SKILL.md` with task-aware branching:
+  - `paths:` frontmatter for main-session auto-activation on UI file types
+  - Body branches by role: implementation (apply tokens / flag violations) vs. planning (reference in output / raise absent DESIGN.md as Open Question)
+  - Non-blocking, non-prompting, non-authoring guidelines
+- Created `skills/design-system/DESIGN.template.md` — 6-section starter (Component Library, Design Tokens, Composition Patterns, Extension Policy, Accessibility Baseline, Anti-Patterns) with prompt comments
+- Added `skills: [design-system]` frontmatter to four subagents that touch design concerns:
+  - `chunk-worker` (writes UI code)
+  - `code-reviewer` (reviews UI code)
+  - `feature-plan` (plans UI features; references DESIGN.md components in chunks)
+  - `plan-critic` (critiques UI plans; raises missing DESIGN.md as Open Question)
+- Added `design-system` row to README Skills table
+
+#### Files
+- `skills/design-system/SKILL.md` (new)
+- `skills/design-system/DESIGN.template.md` (new)
+- `agents/chunk-worker.md` (added `skills:` field)
+- `agents/code-reviewer.md` (added `skills:` field)
+- `agents/feature-plan.md` (added `skills:` field)
+- `agents/plan-critic.md` (added `skills:` field)
+- `README.md` (Skills table updated)
+
+#### Decisions
+- **Scope correction mid-chunk.** Original plan said "no agent/command changes required — skill activates via paths gating." That was wrong: verified via Anthropic docs ([subagents inheritance](https://code.claude.com/docs/en/agent-sdk/subagents), [preload skills into subagents](https://code.claude.com/docs/en/sub-agents#preload-skills-into-subagents)) that subagents do NOT inherit skills from the parent session — each must declare `skills:` explicitly to preload content at startup. `paths:` auto-activation applies to main session only.
+- **Four agents, not just two.** User spec: "plan with knowledge of the design system; if DESIGN.md doesn't exist, ask user." The "ask user" behavior requires plan-critic to raise the Open Question at the refinement checkpoint (where the user is present). feature-plan included so plan artifacts reference DESIGN.md components accurately.
+- **Task-aware skill body.** Preloaded skills aren't path-gated in subagents, so the body serves all four agents regardless of file type. Branching by role (implementation / planning) keeps content relevant for each.
+- **Lean body, not a conventions encyclopedia.** Content is user-owned DESIGN.md; skill is thin plumbing + fallbacks. Reduces "40/47 skills hurt output" risk.
+- **`paths:` globs** — `components/**/*.tsx`, `src/components/**/*.tsx`, `app/**/page.tsx`, `app/**/layout.tsx`. Controls main-session auto-load only; irrelevant to subagent preloading. `src/components/` added after review flagged it as a common layout we'd otherwise miss.
+- **Stack-agnostic template.** User fills in Next.js/Tailwind/Supabase specifics; keeps skill reusable.
 
 ### Session: 1E — merge performance-reviewer into code-reviewer
 **Date:** 2026-04-18

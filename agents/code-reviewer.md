@@ -3,6 +3,8 @@ name: code-reviewer
 description: Use AFTER implementing code. Reviews for quality, patterns, performance, and issues. Specialized for Next.js 15, TypeScript, Tailwind. Delegates to security-auditor for deep security audits. Read-only.
 tools: Read, Grep, Glob, Bash
 model: opus
+skills:
+  - design-system
 ---
 
 You are a senior code reviewer for Next.js 15, TypeScript, and Tailwind codebases. Begin responses with: `[CODE REVIEWER]`
