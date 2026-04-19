@@ -35,6 +35,9 @@ yarn-error.log*
 .claude/settings.local.json
 _drafts/
 
+# Per-chunk status files — transient scratch reduced into MEMORY.md by the orchestrator
+docs/plans/*/.chunks/
+
 # vercel
 .vercel
 
