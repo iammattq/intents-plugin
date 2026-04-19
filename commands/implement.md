@@ -39,6 +39,29 @@ git status --short         # Warn if uncommitted changes
 
 If on main: create feature branch `feature/<feature>` and switch to it.
 
+**Gitignore check (one-time per project).** Chunk-worker status files (`docs/plans/*/.chunks/`) are transient scratch and MUST be gitignored — they're the per-worker race-safety mechanism, not audit data (audit lives in the reduced MEMORY.md Session Log, which IS committed).
+
+```bash
+# Read the project's root .gitignore, then:
+grep -qE '(^|/)docs/plans/\*/\.chunks/' .gitignore 2>/dev/null
+```
+
+- **Rule already present** (matches literally, or a more permissive parent like `**/.chunks/` or `docs/plans/*/`) → proceed.
+- **Rule absent, `.gitignore` exists** → append:
+  ```
+  
+  # Per-chunk status files — transient scratch reduced into MEMORY.md by the orchestrator (intents-plugin)
+  docs/plans/*/.chunks/
+  ```
+  Stage and commit as a one-off setup commit:
+  ```bash
+  git add .gitignore
+  git commit -m "chore: ignore chunk-worker status files (intents-plugin)"
+  ```
+- **`.gitignore` doesn't exist** → create it with the rule + comment, same commit.
+
+This is a one-time check; once committed, future plans in this project inherit the rule.
+
 **Error → STOP.** Inform user.
 
 ### Stage 3: Kanban Loop
@@ -119,7 +142,7 @@ LOOP while Ready has chunks:
 
 Workers write their outcome to `docs/plans/<feature>/.chunks/<chunk_id>.json`. See `agents/chunk-worker.md` for the authoritative schema (`chunk`, `status`, `files`, `unblocks`, `date`, `session_entry`). The wave reducer (step 6 above) reads these files to rebuild MEMORY.md and commits the result as a single orchestrator commit.
 
-- **Gitignored.** `.chunks/` is scratch — it's excluded via the root `.gitignore` (`docs/plans/*/.chunks/`). The audit trail lives in the reduced MEMORY.md Session Log (committed) and the per-chunk git commits. Status files can be deleted after reduction without losing information.
+- **Gitignored.** `.chunks/` is scratch — it's excluded via the root `.gitignore` (`docs/plans/*/.chunks/`). Stage 2 auto-adds the rule on first run in a project if absent. The audit trail lives in the reduced MEMORY.md Session Log (committed) and the per-chunk git commits. Status files can be deleted after reduction without losing information.
 - **Why gitignored, not committed:** keeps commit history clean; transient per-worker scratch exists only to avoid the MEMORY.md last-write-wins race between parallel workers. Narrow cost: switching machines mid-wave (after worker commit, before reducer runs) leaves unreduced status files behind locally. Not a real scenario for single-machine workflows.
 - **Fallback behavior.** If `docs/plans/<feature>/.chunks/` doesn't exist (e.g., an in-flight plan from before this protocol landed), the reducer is a no-op and those plans finish on the old protocol (workers edit MEMORY.md directly). No silent protocol mixing.
 
